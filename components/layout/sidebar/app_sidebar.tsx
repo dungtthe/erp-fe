@@ -1,19 +1,16 @@
 "use client"
 
 import {
-    BookOpen,
-    Bot,
-    Frame,
-    GalleryVerticalEnd,
-    Map,
-    PieChart,
-    Settings2,
-    SquareTerminal
+    Home,
+    Package,
+    ShoppingCart,
+    Users,
+    GalleryVerticalEnd
 } from "lucide-react"
+
 import * as React from "react"
 
-import { NavMain } from "@/components/layout/sidebar/nav_main"
-import { NavProjects } from "@/components/layout/sidebar/nav_projects"
+import { NavSidebar } from "@/components/layout/sidebar/nav_sidebar"
 import { NavUser } from "@/components/layout/sidebar/nav_user"
 import { TeamSwitcher } from "@/components/layout/sidebar/team_switcher"
 import {
@@ -38,110 +35,22 @@ const data = {
             plan: "Enterprise",
         }
     ],
-    navMain: [
+    nav_sidebar: [
         {
-            title: "Playground",
-            url: "#",
-            icon: SquareTerminal,
-            isActive: true,
+            label: "Dashboard",
             items: [
-                {
-                    title: "History",
-                    url: "#",
-                },
-                {
-                    title: "Starred",
-                    url: "#",
-                },
-                {
-                    title: "Settings",
-                    url: "#",
-                },
-            ],
+                { name: "Tổng quan", url: "/dashboard", icon: Home },
+            ]
         },
         {
-            title: "Models",
-            url: "#",
-            icon: Bot,
+            label: "Quản lý đơn hàng",
             items: [
-                {
-                    title: "Genesis",
-                    url: "#",
-                },
-                {
-                    title: "Explorer",
-                    url: "#",
-                },
-                {
-                    title: "Quantum",
-                    url: "#",
-                },
-            ],
+                { name: "Đơn hàng", url: "/orders", icon: ShoppingCart },
+                { name: "Sản phẩm", url: "/products", icon: Package },
+                { name: "Khách hàng", url: "/customers", icon: Users },
+            ]
         },
-        {
-            title: "Documentation",
-            url: "#",
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Introduction",
-                    url: "#",
-                },
-                {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "#",
-                },
-                {
-                    title: "Team",
-                    url: "#",
-                },
-                {
-                    title: "Billing",
-                    url: "#",
-                },
-                {
-                    title: "Limits",
-                    url: "#",
-                },
-            ],
-        },
-    ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
-    ],
+    ]
 
 }
 
@@ -152,9 +61,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <TeamSwitcher teams={data.teams} />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
-
-                {/* <NavProjects projects={data.projects} /> */}
+                {data.nav_sidebar.map((nav_group) => (
+                    <NavSidebar
+                        key={nav_group.label}
+                        nav_group_label={nav_group.label}
+                        nav_items={nav_group.items}
+                    />
+                ))}
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={data.user} />

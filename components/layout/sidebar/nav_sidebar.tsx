@@ -12,10 +12,9 @@ import {
     SidebarMenuItem
 } from "@/components/ui/sidebar"
 
-export function NavProjects({
-    projects,
-}: {
-    projects: {
+export function NavSidebar({ nav_group_label, nav_items }: {
+    nav_group_label: string
+    nav_items: {
         name: string
         url: string
         icon: LucideIcon
@@ -24,9 +23,9 @@ export function NavProjects({
 
     return (
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-            <SidebarGroupLabel>Quản lý đơn hàng</SidebarGroupLabel>
+            <SidebarGroupLabel>{nav_group_label}</SidebarGroupLabel>
             <SidebarMenu>
-                {projects.map((item) => (
+                {nav_items.map((item) => (
                     <SidebarMenuItem key={item.name}>
                         <SidebarMenuButton asChild>
                             <a href={item.url}>
