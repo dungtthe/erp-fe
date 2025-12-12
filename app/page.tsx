@@ -1,5 +1,5 @@
-"use client"
-import { MessageBox } from "@/components/messagebox";
+"use client";
+import { MessageBox } from "@/my-components/messagebox";
 import { toast } from "sonner";
 export default function Home() {
   return (
@@ -16,11 +16,12 @@ export default function Home() {
         }}
       />
       <button
-        onClick={() => { toast.success("Hello from Sonner!") }}
+        onClick={() => {
+          toast.success("Hello from Sonner!");
+        }}
       >
         Show Toast
       </button>
     </>
-
-  )
+  );
 }

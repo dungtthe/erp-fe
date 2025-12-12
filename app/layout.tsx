@@ -1,12 +1,9 @@
-import { AppSidebar } from "@/components/layout/sidebar/app_sidebar";
-import {
-  SidebarInset,
-  SidebarProvider
-} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/my-components/layout/sidebar/app_sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/header";
+import Header from "@/my-components/layout/header";
 import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
