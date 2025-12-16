@@ -1,21 +1,18 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import UnitOfMeasureCombobox from "@/my-components/domains/UnitOfMeasureCombobox";
-import HelpTooltip from "@/my-components/helpers/HelpTooltip";
-import RequiredMark from "@/my-components/helpers/RequiredMark";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
-import { Textarea } from "@/components/ui/textarea";
-import { useState, useRef } from "react";
-import ProductTypeCombobox from "@/my-components/domains/ProductTypeCombobox";
 import { Switch } from "@/components/ui/switch";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import CategoryCombobox from "@/my-components/domains/CategoryCombobox";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import ImageUploader, { UploadedImage } from "@/my-components/ImageUploader";
 import ActionButton from "@/my-components/btn/ActionButton";
+import CategoryCombobox from "@/my-components/domains/CategoryCombobox";
+import ProductTypeCombobox from "@/my-components/domains/ProductTypeCombobox";
+import UnitOfMeasureCombobox from "@/my-components/domains/UnitOfMeasureCombobox";
+import RequiredMark from "@/my-components/helpers/RequiredMark";
+import { X } from "lucide-react";
+import { useState } from "react";
 
 export default function GeneralInfo({ data }: { data: any }) {
   const [selectedUnit, setSelectedUnit] = useState<string | number>("");

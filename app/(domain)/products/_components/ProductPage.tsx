@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Attribute from "./Attribute";
 import GeneralInfo from "./GeneralInfo";
 import VariantTab from "./VariantTab";
+import BOM from "./BOM";
 
 type ProductFormMode = "create" | "detail";
 
@@ -35,13 +36,18 @@ export default function ProductPage({ mode }: ProductFormProps) {
           <TabsContent value="GeneralInfo">
             <GeneralInfo data="a"></GeneralInfo>
           </TabsContent>
+
           <TabsContent value="Attribute">
             <Attribute></Attribute>
           </TabsContent>
+
           <TabsContent value="VariantTab">
             <VariantTab></VariantTab>
           </TabsContent>
-          <TabsContent value="Bom">Định mức nguyên vật liệu</TabsContent>
+
+          <TabsContent value="Bom">
+            <BOM></BOM>
+          </TabsContent>
           <TabsContent value="Routing">Quy trình sản xuất</TabsContent>
         </Tabs>
       </div>

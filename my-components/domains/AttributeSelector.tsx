@@ -42,6 +42,7 @@ interface AttributeSelectorProps {
     onValueAdd: (id: string, value: string) => void;
     onValueRemove: (id: string, value: string) => void;
     onRemoveAttribute: (id: string) => void;
+    disabledAttributeNames?: string[];
 }
 
 export function AttributeSelector({
@@ -52,6 +53,7 @@ export function AttributeSelector({
     onValueAdd,
     onValueRemove,
     onRemoveAttribute,
+    disabledAttributeNames = [],
 }: AttributeSelectorProps) {
     const [open, setOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
@@ -108,18 +110,19 @@ export function AttributeSelector({
                         <SelectValue placeholder="Chọn thuộc tính" />
                     </SelectTrigger>
                     <SelectContent>
-                        {availableAttributes.map((attr) => (
-                            <SelectItem key={attr.id} value={attr.attributeName}>
-                                {attr.attributeName}
-                            </SelectItem>
-                        ))}
-                        {/* Option for custom if needed, but for now we bind strictly to the list + maybe allow custom typing if not found? 
-                             The requirement "bind theo nó" suggests strictness, but usually "Custom" is kept for flexibility.
-                             I'll add "Custom" to be safe if the user wants it, or if it isn't in the list.
-                         */}
-                        {!availableAttributes.find(a => a.attributeName === "Custom") && (
-                            <SelectItem value="Custom">Khác...</SelectItem>
-                        )}
+                        {availableAttributes.map((attr) => {
+                            const isDisabled = disabledAttributeNames.includes(attr.attributeName);
+                            return (
+                                <SelectItem
+                                    key={attr.id}
+                                    value={attr.attributeName}
+                                    disabled={isDisabled}
+                                    className={isDisabled ? "opacity-50" : ""}
+                                >
+                                    {attr.attributeName} {isDisabled && "(Đã chọn)"}
+                                </SelectItem>
+                            );
+                        })}
                     </SelectContent>
                 </Select>
             </div>

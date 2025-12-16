@@ -21,7 +21,7 @@ export default function Attribute() {
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
     const addAttribute = () => {
-        setAttributes([...attributes, { id: generateId(), name: "Màu sắc", values: [] }]);
+        setAttributes([...attributes, { id: generateId(), name: "", values: [] }]);
     };
 
     const removeAttribute = (id: string) => {
@@ -75,18 +75,24 @@ export default function Attribute() {
                 </CardHeader>
                 <CardContent className="pt-6">
                     <div className="space-y-4">
-                        {attributes.map((attr, index) => (
-                            <AttributeSelector
-                                key={attr.id}
-                                id={attr.id}
-                                attributeName={attr.name}
-                                selectedValues={attr.values}
-                                onAttributeNameChange={updateAttributeName}
-                                onValueAdd={addAttributeValue}
-                                onValueRemove={removeAttributeValue}
-                                onRemoveAttribute={removeAttribute}
-                            />
-                        ))}
+                        {attributes.map((attr, index) => {
+                            const otherNames = attributes
+                                .filter((a) => a.id !== attr.id)
+                                .map((a) => a.name);
+                            return (
+                                <AttributeSelector
+                                    key={attr.id}
+                                    id={attr.id}
+                                    attributeName={attr.name}
+                                    selectedValues={attr.values}
+                                    onAttributeNameChange={updateAttributeName}
+                                    onValueAdd={addAttributeValue}
+                                    onValueRemove={removeAttributeValue}
+                                    onRemoveAttribute={removeAttribute}
+                                    disabledAttributeNames={otherNames}
+                                />
+                            );
+                        })}
 
                         {attributes.length === 0 && (
                             <div className="text-center py-8 text-slate-500 border border-dashed rounded-lg">
