@@ -2,28 +2,48 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import UnitOfMeasureCombobox from "@/my-components/domains/UnitOfMeasureCombobox";
-import HelpTooltip from "@/my-components/helpers/HelpTooltip";
 import RequiredMark from "@/my-components/helpers/RequiredMark";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import ProductTypeCombobox from "@/my-components/domains/ProductTypeCombobox";
 import { Switch } from "@/components/ui/switch";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import CategoryCombobox from "@/my-components/domains/CategoryCombobox";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import ImageUploader, { UploadedImage } from "@/my-components/ImageUploader";
 import ActionButton from "@/my-components/btn/ActionButton";
+import { api } from "@/lib/api";
+import { formatCurrency, parseCurrency } from "@/helpers/format";
+import ToastManager from "@/helpers/ToastManager";
 
 export default function GeneralInfo({ data }: { data: any }) {
+  // Form states
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<string | number>("");
   const [selectedProductType, setSelectedProductType] = useState<string | number>("");
   const [selectedCategories, setSelectedCategories] = useState<{ id: string | number; value: string }[]>([]);
   const [currentCategory, setCurrentCategory] = useState<string | number>("");
   const [currentCategoryItem, setCurrentCategoryItem] = useState<{ id: string | number; value: string } | null>(null);
   const [productImages, setProductImages] = useState<UploadedImage[]>([]);
+  const [canBeSold, setCanBeSold] = useState(true);
+  const [canBePurchased, setCanBePurchased] = useState(false);
+  const [canBeManufactured, setCanBeManufactured] = useState(false);
+  const [costPrice, setCostPrice] = useState("");
+  const [priceReference, setPriceReference] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCostPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = parseCurrency(e.target.value);
+    setCostPrice(rawValue);
+  };
+
+  const handlePriceReferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = parseCurrency(e.target.value);
+    setPriceReference(rawValue);
+  };
 
   const handleAddCategory = () => {
     if (currentCategoryItem && !selectedCategories.some((cat) => cat.id === currentCategoryItem.id)) {
@@ -35,6 +55,82 @@ export default function GeneralInfo({ data }: { data: any }) {
 
   const handleRemoveCategory = (id: string | number) => {
     setSelectedCategories(selectedCategories.filter((cat) => cat.id !== id));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+
+      if (!name.trim()) {
+        ToastManager.warning("Vui lòng nhập tên sản phẩm Vui lòng nhập tên sản phẩmVui lòng nhập tên sản phẩmVui lòng nhập tên sản phẩm");
+        return;
+      }
+      if (!code.trim()) {
+        ToastManager.warning("Vui lòng nhập mã sản phẩm");
+        return;
+      }
+      if (!selectedUnit) {
+        ToastManager.warning("Vui lòng chọn đơn vị tính");
+        return;
+      }
+      if (!selectedProductType) {
+        ToastManager.warning("Vui lòng chọn loại sản phẩm");
+        return;
+      }
+      if (!costPrice || isNaN(Number(costPrice))) {
+        ToastManager.warning("Vui lòng nhập chi phí sản xuất hợp lệ");
+        return;
+      }
+      if (!priceReference || isNaN(Number(priceReference))) {
+        ToastManager.warning("Vui lòng nhập giá bán hợp lệ");
+        return;
+      }
+
+      let uploadedFileNames: string[] = [];
+      if (productImages.length > 0) {
+        const files = productImages.map((img) => img.file);
+        const uploadResponse = await api.uploadFiles<string[]>(files, 1);
+
+        if (!uploadResponse.success || !uploadResponse.data) {
+          ToastManager.error("Lỗi upload ảnh", uploadResponse.error?.message || "Lỗi không xác định");
+          return;
+        }
+
+        uploadedFileNames = uploadResponse.data;
+      }
+
+      const productData = {
+        Name: name,
+        Code: code,
+        Description: description || undefined,
+        Images: uploadedFileNames.length > 0 ? uploadedFileNames : undefined,
+        UnitOfMeasureId: selectedUnit,
+        ProductType: Number(selectedProductType),
+        CanBeSold: canBeSold,
+        CanBePurchased: canBePurchased,
+        CanBeManufactured: canBeManufactured,
+        PriceReference: Number(priceReference),
+        CostPrice: Number(costPrice),
+        CategoryIds: selectedCategories.length > 0 ? selectedCategories.map((cat) => cat.id) : undefined,
+      };
+
+      const createResponse = await api.post<string>("products/create", productData);
+
+      if (!createResponse.success) {
+        ToastManager.error("Lỗi tạo sản phẩm", createResponse.error?.message || "Lỗi không xác định");
+        return;
+      }
+
+      ToastManager.success("Tạo sản phẩm thành công!", "Đang chuyển hướng...");
+      setTimeout(() => {
+        window.location.href = "/products";
+      }, 1000);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      ToastManager.error("Đã có lỗi xảy ra khi tạo sản phẩm");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -53,7 +149,7 @@ export default function GeneralInfo({ data }: { data: any }) {
                     Tên sản phẩm
                     <RequiredMark></RequiredMark>
                   </Label>
-                  <Input placeholder="VD: Ghế Xoay Văn Phòng"></Input>
+                  <Input placeholder="VD: Ghế Xoay Văn Phòng" value={name} onChange={(e) => setName(e.target.value)}></Input>
                 </div>
 
                 <div className="w-full">
@@ -61,13 +157,13 @@ export default function GeneralInfo({ data }: { data: any }) {
                     Mã sản phẩm
                     <RequiredMark></RequiredMark>
                   </Label>
-                  <Input placeholder="VD: G-X-V-P"></Input>
+                  <Input placeholder="VD: G-X-V-P" value={code} onChange={(e) => setCode(e.target.value)}></Input>
                 </div>
               </div>
 
               <div className="mt-3">
                 <Label>Mô tả</Label>
-                <Textarea placeholder="VD: Tựa lưng trung thiết kế bảo vệ sức khỏe, giúp nâng đỡ bộ phận cột sống và vùng thắt lưng an toàn, hạn chế nhức mỏi khi ngồi làm việc lâu"></Textarea>
+                <Textarea placeholder="VD: Tựa lưng trung thiết kế bảo vệ sức khỏe, giúp nâng đỡ bộ phận cột sống và vùng thắt lưng an toàn, hạn chế nhức mỏi khi ngồi làm việc lâu" value={description} onChange={(e) => setDescription(e.target.value)}></Textarea>
               </div>
 
               <div className="flex gap-2">
@@ -125,21 +221,21 @@ export default function GeneralInfo({ data }: { data: any }) {
                   <p className="font-medium">Có thể bán</p>
                   <Label className="text-foreground/70">Sản phẩm có thể bán cho khách hàng</Label>
                 </div>
-                <Switch id="CanBeSold-mode" />
+                <Switch id="CanBeSold-mode" checked={canBeSold} onCheckedChange={setCanBeSold} />
               </div>
               <div className="flex justify-between">
                 <div className="mt-2">
                   <p className="font-medium">Có thể mua</p>
                   <Label className="text-foreground/70">Sản phẩm có thể mua từ nhà cung cấp</Label>
                 </div>
-                <Switch id="CanBePurchased-mode" />
+                <Switch id="CanBePurchased-mode" checked={canBePurchased} onCheckedChange={setCanBePurchased} />
               </div>
               <div className="flex justify-between">
                 <div className="mt-2">
                   <p className="font-medium">Có thể sản xuất</p>
                   <Label className="text-foreground/70">Sản phẩm có thể được sản xuất</Label>
                 </div>
-                <Switch id="CanBeManufactured-mode" />
+                <Switch id="CanBeManufactured-mode" checked={canBeManufactured} onCheckedChange={setCanBeManufactured} />
               </div>
             </CardContent>
           </Card>
@@ -155,7 +251,10 @@ export default function GeneralInfo({ data }: { data: any }) {
                   Chi phí sản xuất
                   <RequiredMark></RequiredMark>
                 </Label>
-                <Input></Input>
+                <div className="relative">
+                  <Input value={formatCurrency(costPrice)} onChange={handleCostPriceChange} placeholder="0"></Input>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">đ</span>
+                </div>
               </div>
 
               <div className="w-full mt-2">
@@ -163,14 +262,19 @@ export default function GeneralInfo({ data }: { data: any }) {
                   Giá bán
                   <RequiredMark></RequiredMark>
                 </Label>
-                <Input></Input>
+                <div className="relative">
+                  <Input value={formatCurrency(priceReference)} onChange={handlePriceReferenceChange} placeholder="0"></Input>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">đ</span>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           <div className="flex gap-5 justify-end mt-5">
             <ActionButton action="cancel"></ActionButton>
-            <ActionButton action="save"></ActionButton>
+            <ActionButton action="save" onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Đang lưu..." : undefined}
+            </ActionButton>
           </div>
         </div>
 

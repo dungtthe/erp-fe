@@ -120,3 +120,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+[data-sonner-toast] [data-close-button] {
+  position: absolute !important;
+  right: 0px !important;
+  top: 4px !important;
+  left: auto !important;
+}

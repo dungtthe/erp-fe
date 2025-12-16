@@ -249,7 +249,44 @@ class ApiClient {
     }
   }
 
+  async uploadFiles<T = any>(files: File[], uploadType: number = 1, options: ApiRequestOptions = {}): Promise<ApiResponse<T>> {
+    const { token, timeout = DEFAULT_TIMEOUT, params, ...fetchOptions } = options;
+    const url = buildUrl("files/uploads", { uploadType, ...params });
 
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    const headers: Record<string, string> = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+
+    try {
+      const response = await fetchWithTimeout(
+        url,
+        {
+          method: "POST",
+          headers,
+          body: formData,
+          ...fetchOptions,
+        },
+        timeout
+      );
+
+      return handleResponse<T>(response);
+    } catch (error) {
+      const isTimeout = error instanceof Error && error.message === "Request timeout";
+      return {
+        success: false,
+        status: 0,
+        error: {
+          code: isTimeout ? "REQUEST_TIMEOUT" : "NETWORK_ERROR",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+      };
+    }
+  }
 }
 
 export const api = new ApiClient();
