@@ -1,7 +1,7 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import ActionButton from "@/my-components/btn/ActionButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Attribute from "./Attribute";
 import GeneralInfo from "./GeneralInfo";
+import VariantTab from "./VariantTab";
 
 type ProductFormMode = "create" | "detail";
 
@@ -26,15 +26,21 @@ export default function ProductPage({ mode }: ProductFormProps) {
       <div className="mt-5">
         <Tabs defaultValue="GeneralInfo">
           <TabsList>
-            <TabsTrigger value="GeneralInfo">Thông tin chung</TabsTrigger>
-            <TabsTrigger value="Variant">Thuộc tính & biến thể</TabsTrigger>
+            <TabsTrigger value="GeneralInfo">Sản phẩm mẫu</TabsTrigger>
+            <TabsTrigger value="Attribute">Thuộc tính</TabsTrigger>
             <TabsTrigger value="Bom">Định mức nguyên vật liệu</TabsTrigger>
             <TabsTrigger value="Routing">Quy trình sản xuất</TabsTrigger>
+            <TabsTrigger value="VariantTab">Sản phẩm & Biến thể</TabsTrigger>
           </TabsList>
           <TabsContent value="GeneralInfo">
             <GeneralInfo data="a"></GeneralInfo>
           </TabsContent>
-          <TabsContent value="Variant">Variant</TabsContent>
+          <TabsContent value="Attribute">
+            <Attribute></Attribute>
+          </TabsContent>
+          <TabsContent value="VariantTab">
+            <VariantTab></VariantTab>
+          </TabsContent>
           <TabsContent value="Bom">Định mức nguyên vật liệu</TabsContent>
           <TabsContent value="Routing">Quy trình sản xuất</TabsContent>
         </Tabs>
