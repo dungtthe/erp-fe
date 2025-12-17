@@ -9,7 +9,7 @@ import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useState } from "react";
 
 export type Variant = {
-    id: string; // SKU or distinct ID
+    id: string;
     name: string;
 };
 
@@ -39,6 +39,7 @@ export default function VariantMultiSelect({
         let newSelected = [...selected];
 
         if (id === "all") {
+            // Toggle "All"
             if (isAll) {
                 newSelected = [];
             } else {
@@ -48,7 +49,9 @@ export default function VariantMultiSelect({
                 }
             }
         } else {
+            // Toggle specific
             if (isAll) {
+                // If currently "all", map to specific IDs first
                 const allIds = variants.map(v => v.id);
                 newSelected = allIds;
 
@@ -66,10 +69,12 @@ export default function VariantMultiSelect({
             }
         }
 
+        // If we deselected something and "all" was present (implicit or explicit), remove "all" marker
         if (id !== "all" && newSelected.includes("all")) {
             newSelected = newSelected.filter(x => x !== "all");
         }
 
+        // Check if we effectively selected all
         const allSpecificIds = variants.map(v => v.id);
         const selectedSpecifics = newSelected.filter(x => x !== "all");
 
@@ -92,14 +97,17 @@ export default function VariantMultiSelect({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="justify-between w-full h-auto min-h-[2.25rem] py-1 px-3 text-xs font-normal bg-white"
+                    className="w-full justify-between h-auto min-h-[36px] py-1 px-3"
                 >
-                    <div className="flex flex-wrap gap-1 items-center w-full">
+                    <div className="flex flex-wrap gap-1 items-center w-full text-foreground pr-6">
                         {isAll ? (
-                            <Badge variant="secondary" className="rounded-full px-2 font-normal">
+                            <Badge
+                                variant="secondary"
+                                className="rounded-sm px-1 font-normal"
+                            >
                                 Tất cả biến thể
                                 <div
-                                    className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:bg-slate-200"
+                                    className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                                     onClick={(e) => handleRemove(e, "all")}
                                 >
                                     <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
@@ -107,10 +115,14 @@ export default function VariantMultiSelect({
                             </Badge>
                         ) : selected.length > 0 ? (
                             selected.map((id) => (
-                                <Badge key={id} variant="secondary" className="rounded-full px-2 font-normal">
+                                <Badge
+                                    key={id}
+                                    variant="secondary"
+                                    className="rounded-sm px-1 font-normal"
+                                >
                                     {getVariantName(id)}
                                     <div
-                                        className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer hover:bg-slate-200"
+                                        className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                                         onClick={(e) => handleRemove(e, id)}
                                     >
                                         <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
@@ -118,7 +130,7 @@ export default function VariantMultiSelect({
                                 </Badge>
                             ))
                         ) : (
-                            <span className="text-muted-foreground">Chọn biến thể</span>
+                            <span className="text-muted-foreground font-normal">Chọn biến thể áp dụng...</span>
                         )}
                     </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 absolute right-30" />
@@ -126,10 +138,23 @@ export default function VariantMultiSelect({
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0" align="start">
                 <Command>
-                    <CommandInput placeholder="Tìm biến thể..." />
+                    <CommandInput placeholder="Tìm biến thể..." className="h-9" />
                     <CommandList>
                         <CommandEmpty>Không tìm thấy.</CommandEmpty>
                         <CommandGroup>
+                            <CommandItem
+                                value="all_variants_select_option"
+                                onSelect={() => toggleVariant("all", false)}
+                            >
+                                Tất cả biến thể
+                                <Check
+                                    className={cn(
+                                        "ml-auto h-4 w-4",
+                                        isAll ? "opacity-100" : "opacity-0"
+                                    )}
+                                />
+                            </CommandItem>
+
                             {variants.map((variant) => {
                                 const isSelected = selected.includes(variant.id) || isAll;
                                 const isDisabled = disabledVariants.includes(variant.id);
@@ -139,15 +164,15 @@ export default function VariantMultiSelect({
                                         value={variant.name}
                                         onSelect={() => toggleVariant(variant.id, isDisabled)}
                                         disabled={isDisabled}
-                                        className={isDisabled ? "opacity-50 cursor-not-allowed text-muted-foreground" : ""}
+                                        className={cn(isDisabled && "opacity-50 cursor-not-allowed text-muted-foreground")}
                                     >
+                                        <span className={cn(isDisabled && "line-through")}>{variant.name}</span>
                                         <Check
                                             className={cn(
-                                                "mr-2 h-4 w-4",
+                                                "ml-auto h-4 w-4",
                                                 isSelected ? "opacity-100" : "opacity-0"
                                             )}
                                         />
-                                        <span className={isDisabled ? "line-through" : ""}>{variant.name}</span>
                                     </CommandItem>
                                 );
                             })}

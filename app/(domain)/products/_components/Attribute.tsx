@@ -1,10 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import ActionButton from "@/my-components/btn/ActionButton";
 import { AttributeSelector } from "@/my-components/domains/AttributeSelector";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -69,9 +67,7 @@ export default function Attribute() {
             <Card >
                 <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
                     <CardTitle>Danh sách Thuộc tính</CardTitle>
-                    <Button variant="outline" size="sm" className="gap-2" onClick={addAttribute}>
-                        <Plus size={16} /> Thêm thuộc tính
-                    </Button>
+                    <ActionButton action="create" onClick={addAttribute}>Thêm thuộc tính</ActionButton>
                 </CardHeader>
                 <CardContent className="pt-6">
                     <div className="space-y-4">

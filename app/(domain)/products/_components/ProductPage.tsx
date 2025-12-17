@@ -3,6 +3,7 @@ import Attribute from "./Attribute";
 import GeneralInfo from "./GeneralInfo";
 import VariantTab from "./VariantTab";
 import BOM from "./BOM";
+import Manufacture from "./Manufacture";
 
 type ProductFormMode = "create" | "detail";
 
@@ -49,7 +50,9 @@ export default function ProductPage({ mode, productId }: ProductFormProps) {
           <TabsContent value="Bom">
             <BOM></BOM>
           </TabsContent>
-          <TabsContent value="Routing">Quy trình sản xuất</TabsContent>
+          <TabsContent value="Routing">
+            <Manufacture></Manufacture>
+          </TabsContent>
         </Tabs>
       </div>
       {/* <div>Thông tin chung  Định mức nguyên vật liệu Quy trình</div> */}

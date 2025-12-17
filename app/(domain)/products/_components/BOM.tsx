@@ -5,10 +5,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import ActionButton from "@/my-components/btn/ActionButton";
 import MaterialCombobox, { Material } from "@/my-components/domains/MaterialCombobox";
-import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
 import UnitOfMeasureCombobox from "@/my-components/domains/UnitOfMeasureCombobox";
 import VariantMultiSelect, { Variant } from "@/my-components/domains/VariantMultiSelect";
+import { Trash2 } from "lucide-react";
+import { useState } from "react";
 
 type BOMItem = {
     id: string;
@@ -43,7 +43,7 @@ export default function BOM() {
                 materialName: "",
                 qty: 1,
                 uom: "",
-                applyTo: ["all"],
+                applyTo: [],
             },
         ]);
     };
@@ -118,9 +118,7 @@ export default function BOM() {
                 <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
                         <CardTitle>Thành phần nguyên liệu</CardTitle>
-                        <Button variant="secondary" size="sm" className="gap-1" onClick={handleAddRow}>
-                            <Plus size={14} /> Thêm dòng
-                        </Button>
+                        <ActionButton action="create" onClick={handleAddRow}>Thêm dòng</ActionButton>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -206,5 +204,3 @@ export default function BOM() {
         </div>
     );
 }
-
-
