@@ -28,37 +28,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import ActionButton from "@/my-components/btn/ActionButton";
+import { getProducts, Product, ProductType } from "./_services/productService";
 
-// Types and Enums
-export enum ProductType {
-  FinishedProduct = 1,
-  SemiFinished = 2,
-  RawMaterial = 3,
-  Consumable = 4,
-}
 
-type Product = {
-  id: string;
-  name: string;
-  code: string;
-  image?: string;
-  productType: ProductType;
-  costPrice: number;
-  productVariantNumber: number;
-};
-
-type PagedResult<T> = {
-  items: T[];
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-};
 
 const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   [ProductType.FinishedProduct]: "Thành phẩm",
@@ -109,7 +93,7 @@ export default function ProductsPage() {
 
 
 
-      const response = await api.post<PagedResult<Product>>("products", body);
+      const response = await getProducts(body);
 
       if (response.success && response.data) {
         setProducts(response.data.items);
@@ -152,11 +136,11 @@ export default function ProductsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
+    <div className="min-h-screen bg-muted/40">
       <div className="mx-auto max-w-[1280px] p-6">
         {/* Header Section */}
         <div className="mb-6 flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold leading-[1.3] text-gray-900">
+          <h1 className="text-2xl font-semibold leading-[1.3] text-foreground">
             Danh sách sản phẩm
           </h1>
         </div>
@@ -168,13 +152,13 @@ export default function ProductsPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Tìm kiếm sản phẩm..."
-                className="h-10 w-full border-gray-200 pl-9 rounded-lg focus-visible:ring-blue-600"
+                className="h-10 w-full pl-9 rounded-lg bg-background focus-visible:ring-ring"
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
             </div>
             <Select value={productType} onValueChange={handleTypeChange}>
-              <SelectTrigger className="h-10 w-[180px] rounded-lg border-gray-200">
+              <SelectTrigger className="h-10 w-[180px] rounded-lg border-input bg-background">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <SelectValue placeholder="Loại sản phẩm" />
@@ -197,10 +181,10 @@ export default function ProductsPage() {
         </div>
 
         {/* Content Section */}
-        <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <Card className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <div className="w-full overflow-auto">
             <table className="w-full caption-bottom text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50/50">
+              <thead className="border-b border-border bg-muted/50">
                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                   <th className="h-12 px-3 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 w-[80px]">
                     STT
@@ -243,7 +227,7 @@ export default function ProductsPage() {
                     return (
                       <tr
                         key={product.id}
-                        className="border-b border-gray-100 transition-colors hover:bg-gray-50 data-[state=selected]:bg-muted"
+                        className="border-b border-border transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                       >
                         <td className="p-4 align-middle px-3 text-muted-foreground font-medium text-sm">
                           {stt.toString().padStart(2, '0')}
@@ -261,7 +245,7 @@ export default function ProductsPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-foreground">
                                 {product.name}
                               </span>
                               <span className="text-xs text-muted-foreground">
@@ -281,12 +265,12 @@ export default function ProductsPage() {
                           </Badge>
                         </td>
                         <td className="p-4 align-middle px-6 text-right">
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-foreground">
                             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.costPrice)}
                           </span>
                         </td>
                         <td className="p-4 align-middle px-6 text-right">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-foreground/80">
                             {product.productVariantNumber} biến thể
                           </span>
                         </td>
@@ -295,7 +279,7 @@ export default function ProductsPage() {
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
-                                className="h-8 w-8 p-0 text-muted-foreground hover:text-gray-900"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                               >
                                 <span className="sr-only">Open menu</span>
                                 <MoreHorizontal className="h-4 w-4" />
@@ -321,59 +305,53 @@ export default function ProductsPage() {
           </div>
 
           {/* Pagination Controls */}
+          {/* Pagination Controls */}
           {products.length > 0 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/40">
               <div className="text-xs text-muted-foreground">
                 Hiển thị <strong>{(pagination.page - 1) * pagination.pageSize + 1}-{Math.min(pagination.page * pagination.pageSize, pagination.totalCount)}</strong> của <strong>{pagination.totalCount}</strong> sản phẩm
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={pagination.page <= 1}
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                >
-                  <span className="sr-only">Previous</span>
-                  <span aria-hidden="true">«</span>
-                </Button>
+              <Pagination className="w-auto mx-0">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      className={pagination.page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
 
-                {/* Simple pagination logic: show current page */}
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                  .filter(p => p === 1 || p === pagination.totalPages || Math.abs(p - pagination.page) <= 1) // Show first, last, and neighbors
-                  .map((p, i, arr) => {
-                    const isGap = i > 0 && p - arr[i - 1] > 1;
-                    return (
-                      <div key={p} className="flex items-center">
-                        {isGap && <span className="px-1 text-muted-foreground">...</span>}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={cn(
-                            "h-8 w-8 p-0",
-                            pagination.page === p
-                              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white"
-                              : ""
+                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === pagination.totalPages || Math.abs(p - pagination.page) <= 1)
+                    .map((p, i, arr) => {
+                      const isGap = i > 0 && p - arr[i - 1] > 1;
+                      return (
+                        <div key={p} className="flex">
+                          {isGap && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
                           )}
-                          onClick={() => handlePageChange(p)}
-                        >
-                          {p}
-                        </Button>
-                      </div>
-                    );
-                  })}
+                          <PaginationItem>
+                            <PaginationLink
+                              isActive={pagination.page === p}
+                              onClick={() => handlePageChange(p)}
+                              className="cursor-pointer"
+                            >
+                              {p}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </div>
+                      );
+                    })}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={pagination.page >= pagination.totalPages}
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                >
-                  <span className="sr-only">Next</span>
-                  <span aria-hidden="true">»</span>
-                </Button>
-              </div>
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      className={pagination.page >= pagination.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </Card>
