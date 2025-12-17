@@ -8,9 +8,10 @@ type ProductFormMode = "create" | "detail";
 
 type ProductFormProps = {
   mode: ProductFormMode;
+  productId?: string;
 };
 
-export default function ProductPage({ mode }: ProductFormProps) {
+export default function ProductPage({ mode, productId }: ProductFormProps) {
   let s: string = "Thêm mới sản phẩm";
   if (mode === "detail") {
     s = "Thông tin sản phẩm";
@@ -34,7 +35,7 @@ export default function ProductPage({ mode }: ProductFormProps) {
             <TabsTrigger value="VariantTab">Sản phẩm & Biến thể</TabsTrigger>
           </TabsList>
           <TabsContent value="GeneralInfo">
-            <GeneralInfo data="a"></GeneralInfo>
+            <GeneralInfo mode={mode} productId={productId}></GeneralInfo>
           </TabsContent>
 
           <TabsContent value="Attribute">
@@ -55,3 +56,4 @@ export default function ProductPage({ mode }: ProductFormProps) {
     </div>
   );
 }
+

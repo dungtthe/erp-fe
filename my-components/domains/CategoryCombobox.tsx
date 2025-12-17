@@ -7,6 +7,7 @@ interface CategoryComboboxProps {
   value?: string | number;
   onChange?: (value: string | number) => void;
   onSelectItem?: (item: ComboboxItem | null) => void;
+  onCategoriesLoaded?: (categories: ComboboxItem[]) => void;
   disabled?: boolean;
   className?: string;
   excludeIds?: (string | number)[];
@@ -18,7 +19,7 @@ interface CategoryApiResponse {
   sortOrder: number;
 }
 
-export default function CategoryCombobox({ value, onChange, onSelectItem, disabled = false, className, excludeIds = [] }: CategoryComboboxProps) {
+export default function CategoryCombobox({ value, onChange, onSelectItem, onCategoriesLoaded, disabled = false, className, excludeIds = [] }: CategoryComboboxProps) {
   const [loading, setLoading] = React.useState(false);
   const [categories, setCategories] = React.useState<ComboboxItem[]>([]);
 
@@ -33,6 +34,7 @@ export default function CategoryCombobox({ value, onChange, onSelectItem, disabl
           value: cat.name,
         }));
         setCategories(mappedCategories);
+        onCategoriesLoaded?.(mappedCategories);
       } else {
         console.error("Failed to fetch categories:", response.error);
       }
