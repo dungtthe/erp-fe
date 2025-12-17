@@ -5,7 +5,7 @@ import UnitOfMeasureCombobox from "@/my-components/domains/UnitOfMeasureCombobox
 import RequiredMark from "@/my-components/helpers/RequiredMark";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductTypeCombobox from "@/my-components/domains/ProductTypeCombobox";
 import { Switch } from "@/components/ui/switch";
 import CategoryCombobox from "@/my-components/domains/CategoryCombobox";
@@ -16,8 +16,14 @@ import ActionButton from "@/my-components/btn/ActionButton";
 import { api } from "@/lib/api";
 import { formatCurrency, parseCurrency } from "@/helpers/format";
 import ToastManager from "@/helpers/ToastManager";
+import { getProductGeneralInfo, createProduct as createProductApi } from "../_services/productService";
 
-export default function GeneralInfo({ data }: { data: any }) {
+interface GeneralInfoProps {
+  mode: "create" | "detail";
+  productId?: string;
+}
+
+export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
   // Form states
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -34,6 +40,58 @@ export default function GeneralInfo({ data }: { data: any }) {
   const [costPrice, setCostPrice] = useState("");
   const [priceReference, setPriceReference] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pendingCategoryIds, setPendingCategoryIds] = useState<string[]>([]);
+
+  // mode = detail
+  useEffect(() => {
+    if (mode === "detail" && productId) {
+      loadProductData(productId);
+    }
+  }, [mode, productId]);
+
+  const loadProductData = async (id: string) => {
+    try {
+      setIsLoading(true);
+      const response = await getProductGeneralInfo(id);
+
+      if (!response.success || !response.data) {
+        ToastManager.error("Lỗi tải dữ liệu", response.error?.message || "Không thể tải thông tin sản phẩm");
+        return;
+      }
+
+      const data = response.data;
+      setName(data.name);
+      setCode(data.code);
+      setDescription(data.description || "");
+      setSelectedUnit(data.unitOfMeasureId);
+      setSelectedProductType(data.productType);
+      setCanBeSold(data.canBeSold);
+      setCanBePurchased(data.canBePurchased);
+      setCanBeManufactured(data.canBeManufactured);
+      setCostPrice(data.costPrice.toString());
+      setPriceReference(data.priceReference.toString());
+
+      if (data.images && data.images.length > 0) {
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7015/api";
+        const transformedImages: UploadedImage[] = data.images.map((imgName) => ({
+          id: imgName,
+          url: `${API_BASE_URL}/files/image?uploadType=1&fileName=${imgName}`,
+          file: null as any,
+        }));
+        setProductImages(transformedImages);
+      }
+
+      if (data.categoryIds && data.categoryIds.length > 0) {
+        setPendingCategoryIds(data.categoryIds);
+      }
+    } catch (error) {
+      console.error("Error loading product data:", error);
+      ToastManager.error("Đã có lỗi xảy ra khi tải dữ liệu sản phẩm");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCostPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = parseCurrency(e.target.value);
@@ -57,12 +115,21 @@ export default function GeneralInfo({ data }: { data: any }) {
     setSelectedCategories(selectedCategories.filter((cat) => cat.id !== id));
   };
 
+  const handleCategoriesLoaded = (categories: { id: string | number; value: string }[]) => {
+    if (pendingCategoryIds.length > 0) {
+      const matchedCategories = categories.filter((cat) => pendingCategoryIds.includes(cat.id as string));
+      setSelectedCategories(matchedCategories);
+      setPendingCategoryIds([]);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
 
+      // Validation
       if (!name.trim()) {
-        ToastManager.warning("Vui lòng nhập tên sản phẩm Vui lòng nhập tên sản phẩmVui lòng nhập tên sản phẩmVui lòng nhập tên sản phẩm");
+        ToastManager.warning("Vui lòng nhập tên sản phẩm");
         return;
       }
       if (!code.trim()) {
@@ -86,9 +153,13 @@ export default function GeneralInfo({ data }: { data: any }) {
         return;
       }
 
+      // Handle images
       let uploadedFileNames: string[] = [];
-      if (productImages.length > 0) {
-        const files = productImages.map((img) => img.file);
+      const newImages = productImages.filter((img) => img.file !== null);
+      const existingImages = productImages.filter((img) => img.file === null);
+
+      if (newImages.length > 0) {
+        const files = newImages.map((img) => img.file!);
         const uploadResponse = await api.uploadFiles<string[]>(files, 1);
 
         if (!uploadResponse.success || !uploadResponse.data) {
@@ -99,39 +170,61 @@ export default function GeneralInfo({ data }: { data: any }) {
         uploadedFileNames = uploadResponse.data;
       }
 
+      const allImageNames = [...existingImages.map((img) => img.id), ...uploadedFileNames];
+
       const productData = {
-        Name: name,
-        Code: code,
-        Description: description || undefined,
-        Images: uploadedFileNames.length > 0 ? uploadedFileNames : undefined,
-        UnitOfMeasureId: selectedUnit,
-        ProductType: Number(selectedProductType),
-        CanBeSold: canBeSold,
-        CanBePurchased: canBePurchased,
-        CanBeManufactured: canBeManufactured,
-        PriceReference: Number(priceReference),
-        CostPrice: Number(costPrice),
-        CategoryIds: selectedCategories.length > 0 ? selectedCategories.map((cat) => cat.id) : undefined,
+        name: name,
+        code: code,
+        description: description || undefined,
+        images: allImageNames.length > 0 ? allImageNames : undefined,
+        unitOfMeasureId: selectedUnit as string,
+        productType: Number(selectedProductType),
+        canBeSold: canBeSold,
+        canBePurchased: canBePurchased,
+        canBeManufactured: canBeManufactured,
+        priceReference: Number(priceReference),
+        costPrice: Number(costPrice),
+        categoryIds: selectedCategories.length > 0 ? selectedCategories.map((cat) => cat.id as string) : undefined,
       };
 
-      const createResponse = await api.post<string>("products/create", productData);
+      if (mode === "create") {
+        const createResponse = await createProductApi(productData);
 
-      if (!createResponse.success) {
-        ToastManager.error("Lỗi tạo sản phẩm", createResponse.error?.message || "Lỗi không xác định");
-        return;
+        if (!createResponse.success) {
+          ToastManager.error("Lỗi tạo sản phẩm", createResponse.error?.message || "Lỗi không xác định");
+          return;
+        }
+
+        ToastManager.success("Tạo sản phẩm thành công!", "Đang chuyển hướng...");
+        setTimeout(() => {
+          window.location.href = "/products";
+        }, 1000);
+      } else {
+        // Update mode
+        if (!productId) {
+          ToastManager.error("Lỗi", "Không tìm thấy ID sản phẩm");
+          return;
+        }
+        console.log(productData);
       }
-
-      ToastManager.success("Tạo sản phẩm thành công!", "Đang chuyển hướng...");
-      setTimeout(() => {
-        window.location.href = "/products";
-      }, 1000);
     } catch (error) {
-      console.error("Error creating product:", error);
-      ToastManager.error("Đã có lỗi xảy ra khi tạo sản phẩm");
+      console.error("Error saving product:", error);
+      ToastManager.error("Đã có lỗi xảy ra khi lưu sản phẩm");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -187,7 +280,7 @@ export default function GeneralInfo({ data }: { data: any }) {
                 <Label>Danh mục sản phẩm</Label>
                 <div className="flex gap-2 mt-1">
                   <div className="flex-1">
-                    <CategoryCombobox value={currentCategory} onChange={setCurrentCategory} onSelectItem={setCurrentCategoryItem} excludeIds={selectedCategories.map((cat) => cat.id)} />
+                    <CategoryCombobox value={currentCategory} onChange={setCurrentCategory} onSelectItem={setCurrentCategoryItem} onCategoriesLoaded={handleCategoriesLoaded} excludeIds={selectedCategories.map((cat) => cat.id)} />
                   </div>
                   <Button type="button" onClick={handleAddCategory} disabled={!currentCategory}>
                     Thêm
