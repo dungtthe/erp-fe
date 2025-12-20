@@ -1,4 +1,5 @@
 import { api, ApiResponse } from "@/lib/api";
+import { ProductType } from "@/resources/ProductResource";
 
 export interface ProductGeneralInfo {
   id?: string;
@@ -32,13 +33,6 @@ export interface ProductGeneralInfoResponse {
   categoryIds?: string[];
 }
 
-export enum ProductType {
-  FinishedProduct = 1,
-  SemiFinished = 2,
-  RawMaterial = 3,
-  Consumable = 4,
-}
-
 export type Product = {
   id: string;
   name: string;
@@ -69,14 +63,7 @@ export async function createProduct(data: Partial<ProductGeneralInfo>): Promise<
   return api.post<string>("products/create", data);
 }
 
-
-
-export async function getProducts(params: {
-  page: number;
-  pageSize: number;
-  searchTerm: string;
-  productType?: number;
-}): Promise<ApiResponse<PagedResult<Product>>> {
+export async function getProducts(params: { page: number; pageSize: number; searchTerm: string; productType?: number }): Promise<ApiResponse<PagedResult<Product>>> {
   return api.post<PagedResult<Product>>("products", {
     ...params,
     // Add both camelCase and PascalCase for compatibility if needed, though strictly one should suffice if backend is consistent
