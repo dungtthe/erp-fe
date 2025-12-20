@@ -7,111 +7,90 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export type Attribute = {
-    id: string;
-    name: string;
-    values: string[];
+  attributeId: string;
+  valueIds: string[];
 };
 
 export default function Attribute() {
+  const [attributes, setAttributes] = useState<Attribute[]>([]);
 
-    const [attributes, setAttributes] = useState<Attribute[]>([]);
+  const addAttribute = () => {
+    setAttributes([...attributes, { attributeId: "", valueIds: [] }]);
+  };
 
-    const generateId = () => Math.random().toString(36).substr(2, 9);
+  const removeAttribute = (attributeId: string) => {
+    setAttributes(attributes.filter((attr) => attr.attributeId !== attributeId));
+  };
 
-    const addAttribute = () => {
-        setAttributes([...attributes, { id: generateId(), name: "", values: [] }]);
-    };
+  const updateAttributeId = (oldAttributeId: string, newAttributeId: string) => {
+    setAttributes(attributes.map((attr) => (attr.attributeId === oldAttributeId ? { ...attr, attributeId: newAttributeId, valueIds: [] } : attr)));
+  };
 
-    const removeAttribute = (id: string) => {
-        setAttributes(attributes.filter((attr) => attr.id !== id));
-    };
+  const addAttributeValue = (attributeId: string, valueId: string) => {
+    if (!valueId) return;
+    setAttributes(
+      attributes.map((attr) => {
+        if (attr.attributeId === attributeId && !attr.valueIds.includes(valueId)) {
+          return { ...attr, valueIds: [...attr.valueIds, valueId] };
+        }
+        return attr;
+      })
+    );
+  };
 
-    const updateAttributeName = (id: string, name: string) => {
-        setAttributes(attributes.map((attr) => (attr.id === id ? { ...attr, name, values: [] } : attr)));
-    };
+  const removeAttributeValue = (attributeId: string, valueIdToRemove: string) => {
+    setAttributes(
+      attributes.map((attr) => {
+        if (attr.attributeId === attributeId) {
+          return { ...attr, valueIds: attr.valueIds.filter((v) => v !== valueIdToRemove) };
+        }
+        return attr;
+      })
+    );
+  };
 
-    const addAttributeValue = (attrId: string, value: string) => {
-        const trimmed = value.trim();
-        if (!trimmed) return;
-        setAttributes(
-            attributes.map((attr) => {
-                if (attr.id === attrId && !attr.values.includes(trimmed)) {
-                    return { ...attr, values: [...attr.values, trimmed] };
-                }
-                return attr;
-            })
-        );
-    };
+  const handleReset = () => {
+    setAttributes([]);
+  };
 
-    const removeAttributeValue = (attrId: string, valueToRemove: string) => {
-        setAttributes(
-            attributes.map((attr) => {
-                if (attr.id === attrId) {
-                    return { ...attr, values: attr.values.filter((v) => v !== valueToRemove) };
-                }
-                return attr;
-            })
-        )
-    }
+  const handleSave = () => {
+    console.log("Danh sách thuộc tính:");
+    attributes.forEach((attr) => {
+      console.log({
+        attributeId: attr.attributeId,
+        valueIds: attr.valueIds,
+      });
+    });
+    toast.success("Lưu thành công");
+  };
+  return (
+    <div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+          <CardTitle>Danh sách Thuộc tính</CardTitle>
+          <ActionButton action="create" onClick={addAttribute}>
+            Thêm thuộc tính
+          </ActionButton>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            {attributes.map((attr, index) => {
+              const otherAttributeIds = attributes.filter((a) => a.attributeId !== attr.attributeId).map((a) => a.attributeId);
+              return <AttributeSelector key={attr.attributeId || `temp-${index}`} attributeId={attr.attributeId} selectedValueIds={attr.valueIds} onAttributeIdChange={updateAttributeId} onValueAdd={addAttributeValue} onValueRemove={removeAttributeValue} onRemoveAttribute={removeAttribute} disabledAttributeIds={otherAttributeIds} />;
+            })}
 
-
-    const handleReset = () => {
-        setAttributes([]);
-    };
-
-    const handleSave = () => {
-        toast.success("Lưu thành công");
-    };
-    return (
-        <div>
-            <Card >
-                <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
-                    <CardTitle>Danh sách Thuộc tính</CardTitle>
-                    <ActionButton action="create" onClick={addAttribute}>Thêm thuộc tính</ActionButton>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <div className="space-y-4">
-                        {attributes.map((attr, index) => {
-                            const otherNames = attributes
-                                .filter((a) => a.id !== attr.id)
-                                .map((a) => a.name);
-                            return (
-                                <AttributeSelector
-                                    key={attr.id}
-                                    id={attr.id}
-                                    attributeName={attr.name}
-                                    selectedValues={attr.values}
-                                    onAttributeNameChange={updateAttributeName}
-                                    onValueAdd={addAttributeValue}
-                                    onValueRemove={removeAttributeValue}
-                                    onRemoveAttribute={removeAttribute}
-                                    disabledAttributeNames={otherNames}
-                                />
-                            );
-                        })}
-
-                        {attributes.length === 0 && (
-                            <div className="text-center py-8 text-slate-500 border border-dashed rounded-lg">
-                                Chưa có thuộc tính nào được thêm
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-                <CardFooter className="flex justify-end mt-5">
-                    {attributes.length > 0 && (
-                        // <div className="flex items-center justify-end gap-3">
-                        //     <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleReset}>Hủy bỏ</Button>
-                        //     <Button variant="default" className="gap-2" onClick={handleSave}>
-                        //         <Save size={16} /> Lưu & Tiếp tục
-                        //     </Button>
-                        // </div>
-
-                        <div className="flex gap-5">
-                            <ActionButton action="cancel" onClick={handleReset}></ActionButton>
-                            <ActionButton action="save" onClick={handleSave}></ActionButton>
-                        </div>
-                    )}
-                </CardFooter>
-            </Card>
-        </div>)
+            {attributes.length === 0 && <div className="text-center py-8 text-slate-500 border border-dashed rounded-lg">Chưa có thuộc tính nào được thêm</div>}
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-end mt-5">
+          {attributes.length > 0 && (
+            <div className="flex gap-5">
+              <ActionButton action="cancel" onClick={handleReset}></ActionButton>
+              <ActionButton action="save" onClick={handleSave}></ActionButton>
+            </div>
+          )}
+        </CardFooter>
+      </Card>
+    </div>
+  );
 }

@@ -32,7 +32,6 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
   const [selectedProductType, setSelectedProductType] = useState<string | number>("");
   const [selectedCategories, setSelectedCategories] = useState<{ id: string | number; value: string }[]>([]);
   const [currentCategory, setCurrentCategory] = useState<string | number>("");
-  const [currentCategoryItem, setCurrentCategoryItem] = useState<{ id: string | number; value: string } | null>(null);
   const [productImages, setProductImages] = useState<UploadedImage[]>([]);
   const [canBeSold, setCanBeSold] = useState(true);
   const [canBePurchased, setCanBePurchased] = useState(false);
@@ -103,11 +102,10 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
     setPriceReference(rawValue);
   };
 
-  const handleAddCategory = () => {
-    if (currentCategoryItem && !selectedCategories.some((cat) => cat.id === currentCategoryItem.id)) {
-      setSelectedCategories([...selectedCategories, currentCategoryItem]);
+  const handleCategorySelect = (item: { id: string | number; value: string } | null) => {
+    if (item && !selectedCategories.some((cat) => cat.id === item.id)) {
+      setSelectedCategories([...selectedCategories, item]);
       setCurrentCategory("");
-      setCurrentCategoryItem(null);
     }
   };
 
@@ -278,26 +276,21 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
 
               <div className="mt-3">
                 <Label>Danh mục sản phẩm</Label>
-                <div className="flex gap-2 mt-1">
-                  <div className="flex-1">
-                    <CategoryCombobox value={currentCategory} onChange={setCurrentCategory} onSelectItem={setCurrentCategoryItem} onCategoriesLoaded={handleCategoriesLoaded} excludeIds={selectedCategories.map((cat) => cat.id)} />
-                  </div>
-                  <Button type="button" onClick={handleAddCategory} disabled={!currentCategory}>
-                    Thêm
-                  </Button>
+                <div className="flex gap-5 items-center">
+                  {selectedCategories.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {selectedCategories.map((category) => (
+                        <div key={category.id} className="flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-sm">
+                          <span>{category.value}</span>
+                          <button type="button" onClick={() => handleRemoveCategory(category.id)} className="text-secondary-foreground/60 hover:text-secondary-foreground transition-colors">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <CategoryCombobox className="max-w-[170px] mt-2" value={currentCategory} onChange={setCurrentCategory} onSelectItem={handleCategorySelect} onCategoriesLoaded={handleCategoriesLoaded} excludeIds={selectedCategories.map((cat) => cat.id)} />
                 </div>
-                {selectedCategories.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {selectedCategories.map((category) => (
-                      <div key={category.id} className="flex items-center gap-2 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-sm">
-                        <span>{category.value}</span>
-                        <button type="button" onClick={() => handleRemoveCategory(category.id)} className="text-secondary-foreground/60 hover:text-secondary-foreground transition-colors">
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>

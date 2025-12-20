@@ -51,5 +51,5 @@ export default function CategoryCombobox({ value, onChange, onSelectItem, onCate
     onSelectItem?.(selectedItem || null);
   };
 
-  return <MyCombobox items={availableCategories} value={value} onChange={handleChange} placeholder="Chọn danh mục..." searchPlaceholder="Tìm danh mục..." emptyText={loading ? "Đang tải..." : "Không tìm thấy danh mục."} disabled={disabled || loading} className={className} width="w-full" />;
+  return <MyCombobox items={availableCategories} value={value} onChange={handleChange} placeholder={excludeIds.length === 0 ? "Chọn danh mục..." : "+ Thêm"} searchPlaceholder="Tìm danh mục..." emptyText={loading ? "Đang tải..." : "Không tìm thấy danh mục."} disabled={disabled || loading} className={className} width="w-full" />;
 }
