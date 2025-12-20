@@ -79,3 +79,12 @@ export interface ProductAttributeResponse {
 export async function getProductAttributes(productId: string): Promise<ApiResponse<ProductAttributeResponse[]>> {
   return api.get<ProductAttributeResponse[]>(`products/get-attributes/${productId}`);
 }
+
+export interface CreateOrUpdateAttributesRequest {
+  productId: string;
+  attributeValues: Record<string, string[]>;
+}
+
+export async function createOrUpdateProductAttributes(data: CreateOrUpdateAttributesRequest): Promise<ApiResponse<void>> {
+  return api.post<void>("products/attributes/create-or-update", data);
+}
