@@ -40,7 +40,7 @@ export default function ProductPage({ mode, productId }: ProductFormProps) {
           </TabsContent>
 
           <TabsContent value="Attribute">
-            <Attribute></Attribute>
+            <Attribute productId={productId}></Attribute>
           </TabsContent>
 
           <TabsContent value="VariantTab">
@@ -55,8 +55,6 @@ export default function ProductPage({ mode, productId }: ProductFormProps) {
           </TabsContent>
         </Tabs>
       </div>
-      {/* <div>Thông tin chung  Định mức nguyên vật liệu Quy trình</div> */}
     </div>
   );
 }
-

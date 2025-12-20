@@ -66,7 +66,16 @@ export async function createProduct(data: Partial<ProductGeneralInfo>): Promise<
 export async function getProducts(params: { page: number; pageSize: number; searchTerm: string; productType?: number }): Promise<ApiResponse<PagedResult<Product>>> {
   return api.post<PagedResult<Product>>("products", {
     ...params,
-    // Add both camelCase and PascalCase for compatibility if needed, though strictly one should suffice if backend is consistent
-    // Keeping it simple here based on recent successful calls
   });
+}
+
+export interface ProductAttributeResponse {
+  attributeId: string;
+  attributeValue: {
+    attributeValueId: string;
+  }[];
+}
+
+export async function getProductAttributes(productId: string): Promise<ApiResponse<ProductAttributeResponse[]>> {
+  return api.get<ProductAttributeResponse[]>(`products/get-attributes/${productId}`);
 }

@@ -3,16 +3,46 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import ActionButton from "@/my-components/btn/ActionButton";
 import { AttributeSelector } from "@/my-components/domains/AttributeSelector";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { getProductAttributes } from "../_services/productService";
+import ToastManager from "@/helpers/ToastManager";
 
 export type Attribute = {
   attributeId: string;
   valueIds: string[];
 };
 
-export default function Attribute() {
+export default function Attribute({ productId }: { productId: string }) {
   const [attributes, setAttributes] = useState<Attribute[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAttributes = async () => {
+      if (!productId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await getProductAttributes(productId);
+        if (response.success && response.data) {
+          const transformedAttributes: Attribute[] = response.data.map((attr) => ({
+            attributeId: attr.attributeId,
+            valueIds: attr.attributeValue.map((val) => val.attributeValueId),
+          }));
+          setAttributes(transformedAttributes);
+        } else {
+          ToastManager.error(response.error?.message || "Không thể tải thuộc tính");
+        }
+      } catch (error) {
+        ToastManager.error("Đã xảy ra lỗi khi tải thuộc tính");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAttributes();
+  }, [productId]);
 
   const addAttribute = () => {
     setAttributes([...attributes, { attributeId: "", valueIds: [] }]);
@@ -61,7 +91,8 @@ export default function Attribute() {
         valueIds: attr.valueIds,
       });
     });
-    toast.success("Lưu thành công");
+    console.log(productId);
+    ToastManager.success("Lưu thành công");
   };
   return (
     <div>
@@ -73,14 +104,18 @@ export default function Attribute() {
           </ActionButton>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="space-y-4">
-            {attributes.map((attr, index) => {
-              const otherAttributeIds = attributes.filter((a) => a.attributeId !== attr.attributeId).map((a) => a.attributeId);
-              return <AttributeSelector key={attr.attributeId || `temp-${index}`} attributeId={attr.attributeId} selectedValueIds={attr.valueIds} onAttributeIdChange={updateAttributeId} onValueAdd={addAttributeValue} onValueRemove={removeAttributeValue} onRemoveAttribute={removeAttribute} disabledAttributeIds={otherAttributeIds} />;
-            })}
+          {isLoading ? (
+            <div className="text-center py-8 text-slate-500">Đang tải thuộc tính...</div>
+          ) : (
+            <div className="space-y-4">
+              {attributes.map((attr, index) => {
+                const otherAttributeIds = attributes.filter((a) => a.attributeId !== attr.attributeId).map((a) => a.attributeId);
+                return <AttributeSelector key={attr.attributeId || `temp-${index}`} attributeId={attr.attributeId} selectedValueIds={attr.valueIds} onAttributeIdChange={updateAttributeId} onValueAdd={addAttributeValue} onValueRemove={removeAttributeValue} onRemoveAttribute={removeAttribute} disabledAttributeIds={otherAttributeIds} />;
+              })}
 
-            {attributes.length === 0 && <div className="text-center py-8 text-slate-500 border border-dashed rounded-lg">Chưa có thuộc tính nào được thêm</div>}
-          </div>
+              {attributes.length === 0 && <div className="text-center py-8 text-slate-500 border border-dashed rounded-lg">Chưa có thuộc tính nào được thêm</div>}
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-end mt-5">
           {attributes.length > 0 && (
