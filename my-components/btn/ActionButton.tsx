@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Plus, Save, X, Trash } from "lucide-react";
+import { Check, Play, Plus, Save, Trash, X } from "lucide-react";
+import Link from "next/link";
 
 const ACTION_CONFIG = {
   create: {
@@ -30,9 +30,21 @@ const ACTION_CONFIG = {
     variant: "destructive",
     className: "",
   },
+  start: {
+    label: "Bắt đầu",
+    icon: Play,
+    variant: "default",
+    className: "bg-primary text-primary-foreground",
+  },
+  finish: {
+    label: "Kết thúc",
+    icon: Check,
+    variant: "default",
+    className: "bg-green-500 text-green-50",
+  },
 } as const;
 
-type ActionType = "create" | "save" | "cancel" | "delete";
+type ActionType = "create" | "save" | "cancel" | "delete" | "start" | "finish";
 
 type ActionButtonProps = {
   action: ActionType;

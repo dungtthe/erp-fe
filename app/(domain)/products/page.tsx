@@ -2,25 +2,15 @@
 
 import { Filter, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { GetImageUrl } from "@/helpers/URLUtil";
-import { cn } from "@/lib/utils";
 import ActionButton from "@/my-components/btn/ActionButton";
-import DetailIcon from "@/my-components/icons/DetailIcon";
-import MyPagination from "@/my-components/paginations/MyPagination";
-import { PRODUCT_TYPE_COLORS, PRODUCT_TYPE_LABELS, ProductType } from "@/resources/ProductResource";
-import Image from "next/image";
+import ProductList from "@/my-components/domains/ProductList";
+import { ProductType } from "@/resources/ProductResource";
 import { getProducts, Product } from "./_services/productService";
 
 export default function ProductsPage() {
-  const router = useRouter();
+
   // State
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -129,62 +119,7 @@ export default function ProductsPage() {
         </div>
 
         {/* Content Section */}
-        <Card className="px-5">
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>STT</TableHead>
-                  <TableHead>Hình ảnh</TableHead>
-                  <TableHead>Tên sản phẩm</TableHead>
-                  <TableHead>Mã sản phẩm</TableHead>
-                  <TableHead>Loại sản phẩm</TableHead>
-                  <TableHead>Số biến thể</TableHead>
-                  <TableHead className="w-0">Hành động</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((item, index) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{(pagination.page - 1) * pagination.pageSize + index + 1}</TableCell>
-                    <TableCell className="pr-10">
-                      <div className="rounded-sm overflow-hidden">
-                        <AspectRatio ratio={16 / 9}>
-                          <Image src={GetImageUrl(item.image ?? "")} alt={item.name} fill className="object-cover" />
-                        </AspectRatio>
-                      </div>
-                    </TableCell>
-
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.code}</TableCell>
-                    <TableCell>
-                      <Badge className={cn("font-medium border-0 px-2.5 py-0.5", PRODUCT_TYPE_COLORS[item.productType])}>{PRODUCT_TYPE_LABELS[item.productType]}</Badge>
-                    </TableCell>
-                    <TableCell>{item.productVariantNumber}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center">
-                        <DetailIcon onClick={() => router.push(`/products/${item.id}`)} />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-          <CardFooter>
-            <MyPagination
-              paginationData={{
-                page: pagination.page,
-                pageSize: pagination.pageSize,
-                totalCount: pagination.totalCount,
-                totalPages: pagination.totalPages,
-                hasNextPage: pagination.page < pagination.totalPages,
-                hasPreviousPage: pagination.page > 1,
-              }}
-              onPageChange={handlePageChange}
-            />
-          </CardFooter>
-        </Card>
+        <ProductList products={products} pagination={pagination} onPageChange={handlePageChange} />
       </div>
     </div>
   );

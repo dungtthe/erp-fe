@@ -50,31 +50,28 @@ export default function ManufacturingStep() {
 
     return (
         <Card className="w-full border-slate-200 shadow-sm bg-white">
-            <CardHeader className="flex flex-row items-center justify-between py-4 px-6 bg-slate-50/50 border-b border-slate-100">
-
-            </CardHeader>
             <CardContent className="p-0">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-slate-50 hover:bg-slate-50">
-                            <TableHead className="w-[10%] text-xs font-semibold uppercase text-slate-500 tracking-wider">STT</TableHead>
-                            <TableHead className="w-[30%] text-xs font-semibold uppercase text-slate-500 tracking-wider">Nguyên vật liệu</TableHead>
-                            <TableHead className="w-[20%] text-xs font-semibold uppercase text-slate-500 tracking-wider">Số lượng</TableHead>
-                            <TableHead className="w-[15%] text-xs font-semibold uppercase text-slate-500 tracking-wider ">Đơn vị</TableHead>
+                            <TableHead className="font-semibold">STT</TableHead>
+                            <TableHead className="font-semibold">Nguyên vật liệu</TableHead>
+                            <TableHead className="font-semibold">Số lượng</TableHead>
+                            <TableHead className="font-semibold">Đơn vị</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {materials.map((material, index) => (
                             <TableRow key={material.id} className="hover:bg-slate-50/50 transition-colors">
-                                <TableCell className="font-medium text-slate-700 py-3">{index + 1}</TableCell>
-                                <TableCell className="font-medium text-slate-700 py-3">{material.name}</TableCell>
-                                <TableCell className="text-slate-600 py-3">{material.quantity}</TableCell>
-                                <TableCell className="text-slate-600 py-3">{material.unit}</TableCell>
+                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>{material.name}</TableCell>
+                                <TableCell>{material.quantity}</TableCell>
+                                <TableCell>{material.unit}</TableCell>
                             </TableRow>
                         ))}
                         {materials.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-32 text-center text-slate-400">
+                                <TableCell colSpan={4} className="h-32 text-center text-slate-400">
                                     Chưa có nguyên vật liệu nào.
                                 </TableCell>
                             </TableRow>
@@ -82,10 +79,6 @@ export default function ManufacturingStep() {
                     </TableBody>
                 </Table>
             </CardContent>
-
-            <CardFooter className="bg-slate-50/50 border-t border-slate-100 py-4 px-6 flex justify-end">
-
-            </CardFooter>
         </Card>
     )
 }

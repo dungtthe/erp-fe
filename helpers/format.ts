@@ -17,3 +17,10 @@ export const formatCurrency = (value: string): string => {
 export const parseCurrency = (value: string): string => {
   return value.replace(/[^0-9]/g, "");
 };
+
+export const formatDuration = (hours: number) => {
+  const h = Math.floor(hours)
+  const m = Math.floor((hours - h) * 60)
+  const s = Math.round(((hours - h) * 60 - m) * 60)
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+}

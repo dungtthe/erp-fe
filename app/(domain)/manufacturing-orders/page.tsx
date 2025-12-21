@@ -100,19 +100,19 @@ export default function ManufacturingOrdersPage() {
                     <CardContent>
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>STT</TableHead>
-                                    <TableHead>Mã lệnh sản xuất</TableHead>
-                                    <TableHead>Sản phẩm</TableHead>
-                                    <TableHead>Số lượng dự kiến</TableHead>
-                                    <TableHead>Số lượng đã sản xuất</TableHead>
-                                    <TableHead>Trạng thái</TableHead>
-                                    <TableHead className="w-0">Hành động</TableHead>
+                                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                                    <TableHead className="font-semibold">STT</TableHead>
+                                    <TableHead className="font-semibold">Mã lệnh sản xuất</TableHead>
+                                    <TableHead className="font-semibold">Sản phẩm</TableHead>
+                                    <TableHead className="font-semibold">Số lượng dự kiến</TableHead>
+                                    <TableHead className="font-semibold">Số lượng đã sản xuất</TableHead>
+                                    <TableHead className="font-semibold">Trạng thái</TableHead>
+                                    <TableHead className="font-semibold w-0">Hành động</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {manufacturingOrders.map((item, index) => (
-                                    <TableRow key={item.id}>
+                                    <TableRow key={item.id} className="hover:bg-slate-50/50 transition-colors">
                                         <TableCell>{(pagination.page - 1) * pagination.pageSize + index + 1}</TableCell>
                                         <TableCell>{item.code}</TableCell>
                                         <TableCell>{item.productName}</TableCell>
