@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Package, ShoppingCart, Users, GalleryVerticalEnd } from "lucide-react";
+import { Home, Package, ShoppingCart, Users, GalleryVerticalEnd, Factory } from "lucide-react";
 
 import * as React from "react";
 
@@ -9,7 +9,6 @@ import { NavUser } from "@/my-components/layout/sidebar/nav_user";
 import { TeamSwitcher } from "@/my-components/layout/sidebar/team_switcher";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
   user: {
     name: "Victoria",
@@ -34,6 +33,7 @@ const data = {
         { name: "Đơn hàng", url: "/orders", icon: ShoppingCart },
         { name: "Sản phẩm", url: "/products", icon: Package },
         { name: "Khách hàng", url: "/customers", icon: Users },
+        { name: "Lệnh sản xuất", url: "/manufacturing-orders", icon: Factory },
       ],
     },
   ],
