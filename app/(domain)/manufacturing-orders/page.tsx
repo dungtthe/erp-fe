@@ -26,6 +26,8 @@ export default function ManufacturingOrdersPage() {
         totalCount: 0,
         totalPages: 1,
     });
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
     const fetchManufacturingOrders = async () => {
         setLoading(true);
@@ -33,7 +35,7 @@ export default function ManufacturingOrdersPage() {
             const response = await getMOs({
                 page: pagination.page,
                 pageSize: pagination.pageSize,
-                searchTerm: "",
+                searchTerm: debouncedSearchTerm,
             });
             if (response.data) {
                 setManufacturingOrders(response.data.items);
@@ -51,9 +53,19 @@ export default function ManufacturingOrdersPage() {
     };
 
     useEffect(() => {
-        fetchManufacturingOrders();
-    }, [pagination.page]);
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+            setPagination((prev) => ({ ...prev, page: 1 }));
+        }, 500);
 
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]);
+
+    useEffect(() => {
+        fetchManufacturingOrders();
+    }, [pagination.page, debouncedSearchTerm]);
 
     const handlePageChange = (page: number) => {
         setPagination({ ...pagination, page });
@@ -70,7 +82,12 @@ export default function ManufacturingOrdersPage() {
                     <div className="flex flex-1 items-center gap-3">
                         <div className="relative w-full max-w-sm">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input placeholder="Tìm  lệnh sản xuất..." className="h-10 w-full pl-9 rounded-lg bg-background focus-visible:ring-ring" />
+                            <Input
+                                placeholder="Tìm kiếm theo mã lệnh sản xuất ..."
+                                className="h-10 w-full pl-9 rounded-lg bg-background focus-visible:ring-ring"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
 
                     </div>
