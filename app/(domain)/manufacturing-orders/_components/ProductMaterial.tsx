@@ -18,33 +18,33 @@ export default function ProductMaterial({ productVariantId }: { productVariantId
     const [materials, setMaterials] = useState<BOMMaterial[]>([])
 
     useEffect(() => {
-        const fetchBOM = async () => {
-            if (!productVariantId) {
-                setMaterials([]);
-                return;
-            }
-
-            try {
-                const response = await getBOM(productVariantId)
-                if (response.success && response.data) {
-                    setMaterials(response.data.listMaterials)
-                }
-            } catch (error) {
-                console.error("Failed to fetch BOM for material:", error);
-                setMaterials([]);
-            }
+        if (!productVariantId) {
+            setMaterials([]);
+            return;
         }
-
-        fetchBOM();
+        fetchBOM(productVariantId);
     }, [productVariantId]);
 
-
+    const fetchBOM = async (productVariantId: string) => {
+        try {
+            const response = await getBOM(productVariantId)
+            if (response.success && response.data) {
+                setMaterials(response.data.listMaterials)
+            }
+            else {
+                setMaterials([]);
+            }
+        } catch (error) {
+            console.error("Failed to fetch BOM for material:", error);
+            setMaterials([]);
+        }
+    }
     return (
-        <Card className="w-full border-slate-200 shadow-sm bg-white">
-            <CardContent className="p-0">
+        <Card className="w-full border-border shadow-sm bg-card">
+            <CardContent className="p-2">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-slate-50 hover:bg-slate-50">
+                        <TableRow className="bg-muted/50 hover:bg-muted/50">
                             <TableHead className="font-semibold">STT</TableHead>
                             <TableHead className="font-semibold">Nguyên vật liệu</TableHead>
                             <TableHead className="font-semibold">Số lượng</TableHead>
@@ -53,7 +53,7 @@ export default function ProductMaterial({ productVariantId }: { productVariantId
                     </TableHeader>
                     <TableBody>
                         {materials.map((material, index) => (
-                            <TableRow key={material.id} className="hover:bg-slate-50/50 transition-colors">
+                            <TableRow key={material.id} className="hover:bg-muted/50 transition-colors">
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell>{material.materialName}</TableCell>
                                 <TableCell>{material.quantityRequired}</TableCell>
@@ -62,7 +62,7 @@ export default function ProductMaterial({ productVariantId }: { productVariantId
                         ))}
                         {materials.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="h-32 text-center text-slate-400">
+                                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
                                     {productVariantId ? "Sản phẩm chưa có BOM hoặc chưa có nguyên vật liệu." : "Vui lòng chọn sản phẩm để xem định mức."}
                                 </TableCell>
                             </TableRow>

@@ -24,8 +24,8 @@ interface InfoFieldProps {
 function InfoField({ label, value }: InfoFieldProps) {
     return (
         <div className="flex items-center space-x-2  group">
-            <span className="font-semibold text-xs tracking-wider w-[120px] shrink-0">{label} :</span>
-            <div className="flex-1 text-xs  max-w-[260px]">{value}</div>
+            <span className="font-semibold text-sm  w-[125px] shrink-0">{label} :</span>
+            <div className="flex-1 text-sm  max-w-[260px]">{value}</div>
         </div>
     )
 }
@@ -37,7 +37,7 @@ export default function ManufacturingInformation({
 }: {
     mode: "create" | "detail";
     manufacturingOrderId?: string;
-    onProductSelect?: (productVariantId: string) => void;
+    onProductSelect?: (productVariantId: string, bomId?: string) => void;
 }) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -120,9 +120,8 @@ export default function ManufacturingInformation({
         }));
         setIsDialogOpen(false);
 
-        // Notify parent
         if (onProductSelect) {
-            onProductSelect(product.id);
+            onProductSelect(product.id, undefined);
         }
 
         try {
@@ -132,6 +131,9 @@ export default function ManufacturingInformation({
                     ...prev,
                     bom: `${response.data?.bomCode} (Ver ${response.data?.latestVersion})`
                 }));
+                if (onProductSelect) {
+                    onProductSelect(product.id, response.data.bomId);
+                }
             } else {
                 setOrderData(prev => ({
                     ...prev,
@@ -151,7 +153,7 @@ export default function ManufacturingInformation({
         <Card className="w-full border-border shadow-sm overflow-hidden bg-card">
             <CardHeader className="flex items-center justify-between py-1 px-6 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1 text-xs font-semibold tracking-wide">
+                    <Badge variant="secondary" className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1 text-sm font-semibold tracking-wide">
                         Bản nháp
                     </Badge>
                 </div>
@@ -253,7 +255,7 @@ export default function ManufacturingInformation({
                         </div>
                         <InfoField
                             label="BOM (Định mức)"
-                            value={<span className="hover:underline cursor-pointer">{orderData.bom}</span>}
+                            value={orderData.bom}
                         />
                         <InfoField
                             label="Người phụ trách"

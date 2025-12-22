@@ -28,7 +28,7 @@ export default function WorkCenterCombobox({ value, onChange, onSelectItem, onCa
     useEffect(() => {
         const fetchCategories = async () => {
             setLoading(true);
-            const response = await api.get<WorkCenterApiResponse[]>("/work-centers/leaf");
+            const response = await api.get<WorkCenterApiResponse[]>("/work-centers");
             if (response.success) {
                 const data = response.data || [];
                 const mappedCategories: ComboboxItem[] = data.map((cat) => ({

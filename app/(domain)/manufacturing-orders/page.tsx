@@ -98,7 +98,7 @@ export default function ManufacturingOrdersPage() {
                     </div>
                 </div>
 
-                <Card className="px-5">
+                <Card>
                     <CardContent>
                         <Table>
                             <TableHeader className="bg-muted">

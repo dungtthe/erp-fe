@@ -43,6 +43,12 @@ export interface BOMResponse {
     listMaterials: BOMMaterial[];
 }
 
+export interface RoutingStepResponse {
+    routingStepId: string
+    stepOrder: number
+    operationName: string
+    operationTime: number
+}
 
 
 export async function getMOs(params: { page: number; pageSize: number; searchTerm: string; productType?: number }): Promise<ApiResponse<PagedResult<ManufacturingOrder>>> {
@@ -59,6 +65,10 @@ export async function getProductVariants(params: { page: number; pageSize: numbe
 
 export async function getBOM(productVariantId: string): Promise<ApiResponse<BOMResponse>> {
     return api.get<BOMResponse>(`bill-of-materials/get-bom/${productVariantId}`);
+}
+
+export async function getRoutingSteps(bomID: string): Promise<ApiResponse<RoutingStepResponse[]>> {
+    return api.get<RoutingStepResponse[]>(`routings/get-steps/${bomID}`);
 }
 
 

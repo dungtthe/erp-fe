@@ -19,9 +19,12 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
     }
 
     const [selectedProductVariantId, setSelectedProductVariantId] = useState<string>("");
+    const [selectedBomId, setSelectedBomId] = useState<string>("");
 
-    const handleProductSelect = (productVariantId: string) => {
+    const handleProductSelect = (productVariantId: string, bomId?: string) => {
         setSelectedProductVariantId(productVariantId);
+        if (bomId) setSelectedBomId(bomId);
+        else setSelectedBomId("");
     };
 
     return (
@@ -45,7 +48,7 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
                         <ProductMaterial productVariantId={selectedProductVariantId}></ProductMaterial>
                     </TabsContent>
                     <TabsContent value="Step">
-                        <ManufacturingStep></ManufacturingStep>
+                        <ManufacturingStep bomId={selectedBomId} mode={mode}></ManufacturingStep>
                     </TabsContent>
                 </Tabs>
             </div>
