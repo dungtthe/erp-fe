@@ -12,64 +12,49 @@ import { MANUFACTURING_TYPE_COLORS, MANUFACTURING_TYPE_LABELS, ManufacturingType
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ManufacturingOrder } from "./_services/manufacturingOrderService";
+import { getMOs, ManufacturingOrder } from "./_services/manufacturingOrderService";
 
 
 export default function ManufacturingOrdersPage() {
 
     const router = useRouter();
     const [manufacturingOrders, setManufacturingOrders] = useState<ManufacturingOrder[]>([]);
-    useEffect(() => {
-        setManufacturingOrders([
-            {
-                id: "1",
-                code: "MO-202512-0001",
-                productName: "Bàn ăn",
-                productPlannedQuantity: 1,
-                productProducedQuantity: 1,
-                status: ManufacturingType.Draft,
-            },
-            {
-                id: "2",
-                code: "MO-202512-0002",
-                productName: "Bàn ăn",
-                productPlannedQuantity: 2,
-                productProducedQuantity: 2,
-                status: ManufacturingType.Confirmed,
-            },
-            {
-                id: "3",
-                code: "MO-202512-0003",
-                productName: "Bàn ăn",
-                productPlannedQuantity: 3,
-                productProducedQuantity: 3,
-                status: ManufacturingType.Done,
-            },
-            {
-                id: "4",
-                code: "MO-202512-0004",
-                productName: "Bàn ăn",
-                productPlannedQuantity: 4,
-                productProducedQuantity: 4,
-                status: ManufacturingType.Cancelled,
-            },
-            {
-                id: "5",
-                code: "MO-202512-0005",
-                productName: "Bàn ăn",
-                productPlannedQuantity: 5,
-                productProducedQuantity: 5,
-                status: ManufacturingType.Paused,
-            },
-        ]);
-    }, []);
-
+    const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({
         page: 1,
         pageSize: 5,
         totalCount: 0,
         totalPages: 1,
     });
+
+    const fetchManufacturingOrders = async () => {
+        setLoading(true);
+        try {
+            const response = await getMOs({
+                page: pagination.page,
+                pageSize: pagination.pageSize,
+                searchTerm: "",
+            });
+            if (response.data) {
+                setManufacturingOrders(response.data.items);
+                setPagination({
+                    ...pagination,
+                    totalCount: response.data.totalCount,
+                    totalPages: response.data.totalPages,
+                });
+            }
+        } catch (error) {
+            console.error("Không lấy được dữ liệu:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchManufacturingOrders();
+    }, [pagination.page]);
+
+
     const handlePageChange = (page: number) => {
         setPagination({ ...pagination, page });
     };
@@ -99,8 +84,8 @@ export default function ManufacturingOrdersPage() {
                 <Card className="px-5">
                     <CardContent>
                         <Table>
-                            <TableHeader>
-                                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                            <TableHeader className="bg-muted">
+                                <TableRow className="bg-muted hover:bg-muted">
                                     <TableHead className="font-semibold">STT</TableHead>
                                     <TableHead className="font-semibold">Mã lệnh sản xuất</TableHead>
                                     <TableHead className="font-semibold">Sản phẩm</TableHead>
@@ -112,12 +97,12 @@ export default function ManufacturingOrdersPage() {
                             </TableHeader>
                             <TableBody>
                                 {manufacturingOrders.map((item, index) => (
-                                    <TableRow key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                                    <TableRow key={item.id} className="hover:bg-muted/50 transition-colors">
                                         <TableCell>{(pagination.page - 1) * pagination.pageSize + index + 1}</TableCell>
                                         <TableCell>{item.code}</TableCell>
                                         <TableCell>{item.productName}</TableCell>
-                                        <TableCell>{item.productPlannedQuantity}</TableCell>
-                                        <TableCell>{item.productProducedQuantity}</TableCell>
+                                        <TableCell>{item.quantityToProduce}</TableCell>
+                                        <TableCell>{item.quantityProduced}</TableCell>
                                         <TableCell>
                                             <Badge className={cn("font-medium border-0 px-2.5 py-0.5", MANUFACTURING_TYPE_COLORS[item.status])}>{MANUFACTURING_TYPE_LABELS[item.status]}</Badge>
                                         </TableCell>
