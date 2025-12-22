@@ -43,7 +43,7 @@ export default function ProductList({ products, pagination, onPageChange, onSele
                             <TableHead>Tên sản phẩm</TableHead>
                             <TableHead>Mã sản phẩm</TableHead>
                             <TableHead>Loại sản phẩm</TableHead>
-                            <TableHead>Số biến thể</TableHead>
+                            {!onSelect && <TableHead>Số biến thể</TableHead>}
                             <TableHead className="w-0">Hành động</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -64,7 +64,9 @@ export default function ProductList({ products, pagination, onPageChange, onSele
                                 <TableCell>
                                     <Badge className={cn("font-medium border-0 px-2.5 py-0.5", PRODUCT_TYPE_COLORS[item.productType])}>{PRODUCT_TYPE_LABELS[item.productType]}</Badge>
                                 </TableCell>
-                                <TableCell>{item.productVariantNumber}</TableCell>
+                                {
+                                    !onSelect && (<TableCell>{item.productVariantNumber}</TableCell>)
+                                }
                                 <TableCell>
                                     <div className="flex items-center justify-center">
                                         {onSelect ? (

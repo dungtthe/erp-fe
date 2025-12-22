@@ -14,6 +14,7 @@ import DatePicker from "@/my-components/datepicker/DatePicker"
 import ProductListDialog from "@/my-components/domains/ProductListDialog"
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { getProducts, Product } from "../../products/_services/productService"
+import { getProductVariants, ProductVariant } from "../_services/manufacturingOrderService"
 
 interface InfoFieldProps {
     label: string
@@ -40,7 +41,7 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
         totalPages: 1,
     });
 
-    const fetchProducts = useCallback(async () => {
+    const fetchProductVariants = useCallback(async () => {
         try {
             const body: any = {
                 page: pagination.page,
@@ -48,10 +49,20 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
                 searchTerm: "",
             };
 
-            const response = await getProducts(body);
+            const response = await getProductVariants(body);
 
             if (response.success && response.data) {
-                setProducts(response.data.items);
+                const mappedProducts: Product[] = response.data.items.map((v: ProductVariant) => ({
+                    id: v.productVariantId,
+                    name: v.productVariantName,
+                    code: v.productVariantCode,
+                    image: v.productVariantImage,
+                    productType: v.productVariantType,
+                    costPrice: 0,
+                    productVariantNumber: 0
+                }));
+
+                setProducts(mappedProducts);
                 setPagination((prev) => ({
                     ...prev,
                     totalCount: response.data!.totalCount,
@@ -59,15 +70,15 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
                 }));
             }
         } catch (error) {
-            console.error("Failed to fetch products:", error);
+            console.error("Không tải được dữ liệu sản phẩm:", error);
         }
     }, [pagination.page, pagination.pageSize]);
 
     useEffect(() => {
         if (isDialogOpen) {
-            fetchProducts();
+            fetchProductVariants();
         }
-    }, [isDialogOpen, fetchProducts]);
+    }, [isDialogOpen, fetchProductVariants]);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -102,10 +113,10 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
     };
 
     return (
-        <Card className="w-full border-slate-200 shadow-sm overflow-hidden bg-white">
-            <CardHeader className="flex items-center justify-between py-1 px-6 bg-slate-50/50 border-b border-slate-100">
+        <Card className="w-full border-border shadow-sm overflow-hidden bg-card">
+            <CardHeader className="flex items-center justify-between py-1 px-6 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="bg-slate-200/60 text-slate-600 hover:bg-slate-200/80 px-3 py-1 text-xs font-semibold tracking-wide">
+                    <Badge variant="secondary" className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1 text-xs font-semibold tracking-wide">
                         Bản nháp
                     </Badge>
                 </div>
@@ -128,7 +139,7 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
                                 <Input
                                     type="text"
                                     value={orderData.code}
-                                    placeholder="Nhập mã lệnh sản xuất"
+                                    placeholder="MO-YYYY-STT"
                                     onChange={(e) => setOrderData(prev => ({ ...prev, code: e.target.value }))}
                                     className="h-8 md:w-[160px]"
                                 />
@@ -140,7 +151,7 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
                                 <ProductListDialog
                                     open={isDialogOpen}
                                     onOpenChange={setIsDialogOpen}
-                                    trigger={<span className="text-slate-600 font-semibold hover:underline cursor-pointer flex items-center gap-2">
+                                    trigger={<span className="text-primary font-semibold hover:underline cursor-pointer flex items-center gap-2">
                                         {orderData.productName}
                                     </span>}
                                     products={products}
