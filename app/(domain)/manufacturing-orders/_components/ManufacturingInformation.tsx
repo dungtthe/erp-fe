@@ -13,8 +13,8 @@ import ActionButton from "@/my-components/btn/ActionButton"
 import DatePicker from "@/my-components/datepicker/DatePicker"
 import ProductListDialog from "@/my-components/domains/ProductListDialog"
 import { ReactNode, useCallback, useEffect, useState } from 'react'
-import { getProducts, Product } from "../../products/_services/productService"
-import { getProductVariants, ProductVariant } from "../_services/manufacturingOrderService"
+import { Product } from "../../products/_services/productService"
+import { getBOM, getProductVariants, ProductVariant } from "../_services/manufacturingOrderService"
 
 interface InfoFieldProps {
     label: string
@@ -30,7 +30,15 @@ function InfoField({ label, value }: InfoFieldProps) {
     )
 }
 
-export default function ManufacturingInformation({ mode, manufacturingOrderId }: { mode: "create" | "detail"; manufacturingOrderId?: string }) {
+export default function ManufacturingInformation({
+    mode,
+    manufacturingOrderId,
+    onProductSelect
+}: {
+    mode: "create" | "detail";
+    manufacturingOrderId?: string;
+    onProductSelect?: (productVariantId: string) => void;
+}) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [products, setProducts] = useState<Product[]>([]);
@@ -100,16 +108,43 @@ export default function ManufacturingInformation({ mode, manufacturingOrderId }:
         quantity: 500,
         startDate: new Date(),
         endDate: new Date(new Date().setDate(new Date().getDate() + 5)),
-        bom: "BOM-ASM-01 (Ver 2.0)",
+        bom: "",
         pic: "Nguyễn Văn A"
     });
 
-    const handleSelectProduct = (product: Product) => {
+    const handleSelectProduct = async (product: Product) => {
         setOrderData(prev => ({
             ...prev,
-            productName: product.name
+            productName: product.name,
+            bom: "Đang tải..."
         }));
         setIsDialogOpen(false);
+
+        // Notify parent
+        if (onProductSelect) {
+            onProductSelect(product.id);
+        }
+
+        try {
+            const response = await getBOM(product.id);
+            if (response.success && response.data) {
+                setOrderData(prev => ({
+                    ...prev,
+                    bom: `${response.data?.bomCode} (Ver ${response.data?.latestVersion})`
+                }));
+            } else {
+                setOrderData(prev => ({
+                    ...prev,
+                    bom: "Không tìm thấy BOM"
+                }));
+            }
+        } catch (error) {
+            console.error("Failed to fetch BOM:", error);
+            setOrderData(prev => ({
+                ...prev,
+                bom: "Lỗi khi tải BOM"
+            }));
+        }
     };
 
     return (

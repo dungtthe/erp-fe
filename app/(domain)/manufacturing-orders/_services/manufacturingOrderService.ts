@@ -29,6 +29,20 @@ export type PagedResult<T> = {
     hasPreviousPage: boolean;
 };
 
+export interface BOMMaterial {
+    id: string;
+    materialName: string;
+    quantityRequired: number;
+    unitOfMeasureName: string;
+}
+
+export interface BOMResponse {
+    bomId: string;
+    bomCode: string;
+    latestVersion: number;
+    listMaterials: BOMMaterial[];
+}
+
 
 
 export async function getMOs(params: { page: number; pageSize: number; searchTerm: string; productType?: number }): Promise<ApiResponse<PagedResult<ManufacturingOrder>>> {
@@ -41,6 +55,10 @@ export async function getProductVariants(params: { page: number; pageSize: numbe
     return api.post<PagedResult<ProductVariant>>("product-variants", {
         ...params,
     });
+}
+
+export async function getBOM(productVariantId: string): Promise<ApiResponse<BOMResponse>> {
+    return api.get<BOMResponse>(`bill-of-materials/get-bom/${productVariantId}`);
 }
 
 

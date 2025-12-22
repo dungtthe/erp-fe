@@ -1,7 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
     Table,
     TableBody,
@@ -11,41 +10,33 @@ import {
     TableRow
 } from "@/components/ui/table"
 import { useEffect, useState } from 'react'
+import { BOMMaterial, getBOM } from "../_services/manufacturingOrderService"
 
 
 
-interface Material {
-    id: string
-    name: string
-    quantity: number
-    unit: string
-}
-
-export default function ManufacturingStep() {
-    // Initial sample data
-    const [materials, setMaterials] = useState<Material[]>([
-        { id: '1', name: 'Vải', quantity: 4, unit: 'm' },
-        { id: '2', name: 'Kim', quantity: 12, unit: 'm' },
-        { id: '3', name: 'Giấy', quantity: 2, unit: 'm' },
-    ])
-
-    const [newMaterial, setNewMaterial] = useState<Partial<Material> | null>(null)
+export default function ProductMaterial({ productVariantId }: { productVariantId?: string }) {
+    const [materials, setMaterials] = useState<BOMMaterial[]>([])
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setMaterials(prev => prev.map(m => {
-                if (m.quantity === 0) {
-                    // Add 1 second (1/3600 hour)
-                    return { ...m, quantity: m.quantity + (1 / 3600) }
+        const fetchBOM = async () => {
+            if (!productVariantId) {
+                setMaterials([]);
+                return;
+            }
+
+            try {
+                const response = await getBOM(productVariantId)
+                if (response.success && response.data) {
+                    setMaterials(response.data.listMaterials)
                 }
-                return m
-            }))
-        }, 1000)
+            } catch (error) {
+                console.error("Failed to fetch BOM for material:", error);
+                setMaterials([]);
+            }
+        }
 
-        return () => clearInterval(interval)
-    }, [])
-
-
+        fetchBOM();
+    }, [productVariantId]);
 
 
     return (
@@ -64,15 +55,15 @@ export default function ManufacturingStep() {
                         {materials.map((material, index) => (
                             <TableRow key={material.id} className="hover:bg-slate-50/50 transition-colors">
                                 <TableCell>{index + 1}</TableCell>
-                                <TableCell>{material.name}</TableCell>
-                                <TableCell>{material.quantity}</TableCell>
-                                <TableCell>{material.unit}</TableCell>
+                                <TableCell>{material.materialName}</TableCell>
+                                <TableCell>{material.quantityRequired}</TableCell>
+                                <TableCell>{material.unitOfMeasureName}</TableCell>
                             </TableRow>
                         ))}
                         {materials.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={4} className="h-32 text-center text-slate-400">
-                                    Chưa có nguyên vật liệu nào.
+                                    {productVariantId ? "Sản phẩm chưa có BOM hoặc chưa có nguyên vật liệu." : "Vui lòng chọn sản phẩm để xem định mức."}
                                 </TableCell>
                             </TableRow>
                         )}
