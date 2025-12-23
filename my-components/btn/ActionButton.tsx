@@ -39,8 +39,8 @@ const ACTION_CONFIG = {
   finish: {
     label: "Kết thúc",
     icon: Check,
-    variant: "default",
-    className: "bg-green-500 text-green-50",
+    variant: "outline",
+    className: "border-muted-foreground text-foreground",
   },
 } as const;
 
