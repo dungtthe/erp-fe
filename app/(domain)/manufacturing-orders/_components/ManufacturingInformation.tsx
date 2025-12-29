@@ -1,20 +1,24 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
+
 import {
     Card,
     CardContent,
     CardHeader,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import ActionButton from "@/my-components/btn/ActionButton"
 import DatePicker from "@/my-components/datepicker/DatePicker"
 import ProductListDialog from "@/my-components/domains/ProductListDialog"
+import { useRouter } from "next/navigation"
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Product } from "../../products/_services/productService"
-import { getBOM, getProductVariants, ProductVariant } from "../_services/manufacturingOrderService"
+import { createManufacturingOrder, getBOM, getProductVariants, ProductVariant } from "../_services/manufacturingOrderService"
+import { toast } from "sonner"
+import ToastManager from "@/helpers/ToastManager"
+
+import { ExtendedRoutingStep } from "./ManufacturingStep";
 
 interface InfoFieldProps {
     label: string
@@ -33,13 +37,17 @@ function InfoField({ label, value }: InfoFieldProps) {
 export default function ManufacturingInformation({
     mode,
     manufacturingOrderId,
-    onProductSelect
+    onProductSelect,
+    routingId,
+    steps
 }: {
     mode: "create" | "detail";
     manufacturingOrderId?: string;
     onProductSelect?: (productVariantId: string, bomId?: string) => void;
+    routingId?: string;
+    steps?: ExtendedRoutingStep[];
 }) {
-
+    const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [products, setProducts] = useState<Product[]>([]);
     const [pagination, setPagination] = useState({
@@ -97,26 +105,29 @@ export default function ManufacturingInformation({
     const [orderData, setOrderData] = useState<{
         code: string,
         productName: string,
-        quantity: number,
+        quantityToProduce: number,
         startDate: Date | undefined,
         endDate: Date | undefined,
         bom: string,
-        pic: string
+        productVariantId?: string
     }>({
         code: manufacturingOrderId || "",
         productName: "Chọn sản phẩm",
-        quantity: 500,
-        startDate: new Date(),
-        endDate: new Date(new Date().setDate(new Date().getDate() + 5)),
+        quantityToProduce: 1,
+        startDate: undefined,
+        endDate: undefined,
         bom: "",
-        pic: "Nguyễn Văn A"
+        productVariantId: undefined
     });
 
     const handleSelectProduct = async (product: Product) => {
+        const generatedCode = `MO-${new Date().getFullYear()}-${product.code}`;
         setOrderData(prev => ({
             ...prev,
             productName: product.name,
-            bom: "Đang tải..."
+            code: generatedCode,
+            bom: "Đang tải...",
+            productVariantId: product.id
         }));
         setIsDialogOpen(false);
 
@@ -149,6 +160,61 @@ export default function ManufacturingInformation({
         }
     };
 
+    const handleConfirm = async () => {
+        if (!orderData.productVariantId) {
+            ToastManager.error("Vui lòng chọn sản phẩm!");
+            return;
+        }
+
+        if (!orderData.startDate || !orderData.endDate) {
+            ToastManager.error("Vui lòng chọn ngày bắt đầu và kết thúc!");
+            return;
+        }
+        if (orderData.startDate > orderData.endDate) {
+            ToastManager.error("Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
+            return;
+        }
+        if (!routingId) {
+            ToastManager.error("Dữ liệu định mức/quy trình chưa được tải đầy đủ!");
+            return;
+        }
+        if (steps && steps.some(s => !s.workCenterId)) {
+            ToastManager.error("Vui lòng chọn phân xưởng cho tất cả các công đoạn!");
+            return;
+        }
+        if (orderData.quantityToProduce <= 0) {
+            ToastManager.error("Số lượng phải lớn hơn 0!");
+            return;
+        }
+
+        try {
+            const workOrders = steps?.map(step => ({
+                manufacturingOrderId: step.routingStepId,
+                workCenterId: String(step.workCenterId),
+                routingStepId: step.routingStepId
+            })) || [];
+
+            const result = await createManufacturingOrder({
+                code: orderData.code,
+                routingId: routingId,
+                quantityToProduce: orderData.quantityToProduce,
+                startDate: orderData.startDate,
+                endDate: orderData.endDate,
+                workOrders: workOrders
+            });
+
+            if (result.success) {
+                ToastManager.success("Tạo lệnh sản xuất thành công!");
+                router.push("/manufacturing-orders");
+            } else {
+                ToastManager.error("Có lỗi khi tạo lệnh: " + (result.error?.message || "Lỗi không xác định"));
+            }
+        } catch (error) {
+            console.error("Error creating order:", error);
+            ToastManager.error("Đã xảy ra lỗi hệ thống.");
+        }
+    };
+
     return (
         <Card className="w-full border-border shadow-sm overflow-hidden bg-card">
             <CardHeader className="flex items-center justify-between py-1 px-6 border-b border-border">
@@ -158,10 +224,10 @@ export default function ManufacturingInformation({
                     </Badge>
                 </div>
                 <div className="flex items-center gap-3">
-                    <ActionButton action="save" size="sm">
+                    <ActionButton action="save" size="sm" onClick={handleConfirm}>
                         Xác nhận
                     </ActionButton>
-                    <ActionButton action="cancel" size="sm">
+                    <ActionButton action="cancel" size="sm" onClick={() => router.back()}>
                         Hủy
                     </ActionButton>
                 </div>
@@ -176,9 +242,9 @@ export default function ManufacturingInformation({
                                 <Input
                                     type="text"
                                     value={orderData.code}
-                                    placeholder="MO-YYYY-STT"
-                                    onChange={(e) => setOrderData(prev => ({ ...prev, code: e.target.value }))}
-                                    className="h-8 md:w-[160px]"
+                                    placeholder="Tự động tạo"
+                                    readOnly={true}
+                                    className="h-8 md:w-[200px] bg-muted/50 cursor-not-allowed backdrop-blur-sm"
                                 />
                             </div>}
                         />
@@ -205,8 +271,8 @@ export default function ManufacturingInformation({
                                     <Input
                                         type="number"
                                         min={1}
-                                        value={orderData.quantity}
-                                        onChange={(e) => setOrderData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
+                                        value={orderData.quantityToProduce}
+                                        onChange={(e) => setOrderData(prev => ({ ...prev, quantityToProduce: parseInt(e.target.value) || 0 }))}
                                         className="h-8 md:w-[160px]"
                                     />
                                     <span className="text-sm text-muted-foreground">Cái</span>
@@ -220,46 +286,25 @@ export default function ManufacturingInformation({
                             <InfoField
                                 label="Ngày bắt đầu"
                                 value={
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <DatePicker />
-
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={orderData.startDate}
-                                                onSelect={(date) => setOrderData(prev => ({ ...prev, startDate: date }))}
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <DatePicker
+                                        value={orderData.startDate}
+                                        onChange={(date) => setOrderData(prev => ({ ...prev, startDate: date }))}
+                                    />
                                 }
                             />
                             <InfoField
                                 label="Ngày kết thúc"
                                 value={
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <DatePicker />
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={orderData.endDate}
-                                                onSelect={(date) => setOrderData(prev => ({ ...prev, endDate: date }))}
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                    <DatePicker
+                                        value={orderData.endDate}
+                                        onChange={(date) => setOrderData(prev => ({ ...prev, endDate: date }))}
+                                    />
                                 }
                             />
                         </div>
                         <InfoField
                             label="BOM (Định mức)"
                             value={orderData.bom}
-                        />
-                        <InfoField
-                            label="Người phụ trách"
-                            value={orderData.pic}
                         />
                     </div>
                 </div>

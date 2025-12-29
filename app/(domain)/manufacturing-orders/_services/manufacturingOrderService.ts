@@ -50,7 +50,20 @@ export interface RoutingStepResponse {
     operationTime: number
 }
 
+export interface WorkOrderRequest {
+    workCenterId: string;
+    routingStepId: string;
+    manufacturingOrderId?: string;
+}
 
+export interface CreateManufacturingOrderRequest {
+    code: string;
+    routingId: string;
+    quantityToProduce: number;
+    startDate: Date;
+    endDate: Date;
+    workOrders: WorkOrderRequest[];
+}
 export async function getMOs(params: { page: number; pageSize: number; searchTerm: string; productType?: number }): Promise<ApiResponse<PagedResult<ManufacturingOrder>>> {
     return api.post<PagedResult<ManufacturingOrder>>("manufacturing-orders", {
         ...params,
@@ -63,6 +76,14 @@ export async function getProductVariants(params: { page: number; pageSize: numbe
     });
 }
 
+export interface RoutingStepResponse {
+    routingId: string;
+    routingStepId: string
+    stepOrder: number
+    operationName: string
+    operationTime: number
+}
+
 export async function getBOM(productVariantId: string): Promise<ApiResponse<BOMResponse>> {
     return api.get<BOMResponse>(`bill-of-materials/get-bom/${productVariantId}`);
 }
@@ -71,5 +92,6 @@ export async function getRoutingSteps(bomID: string): Promise<ApiResponse<Routin
     return api.get<RoutingStepResponse[]>(`routings/get-steps/${bomID}`);
 }
 
-
-
+export async function createManufacturingOrder(data: CreateManufacturingOrderRequest): Promise<ApiResponse<string>> {
+    return api.post<string>("manufacturing-orders/create", data);
+}

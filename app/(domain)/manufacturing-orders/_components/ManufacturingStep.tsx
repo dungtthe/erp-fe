@@ -20,34 +20,19 @@ import {
 import { useEffect, useState } from 'react'
 import { getRoutingSteps, RoutingStepResponse } from "../_services/manufacturingOrderService"
 
-interface ExtendedRoutingStep extends RoutingStepResponse {
+export interface ExtendedRoutingStep extends RoutingStepResponse {
     workCenterId?: string | number;
 }
 
-export default function ManufacturingStep({ bomId, mode = 'create' }: { bomId?: string, mode?: 'create' | 'detail' }) {
+interface ManufacturingStepProps {
+    steps: ExtendedRoutingStep[];
+    onStepsChange: (steps: ExtendedRoutingStep[]) => void;
+    mode?: 'create' | 'detail';
+}
+
+export default function ManufacturingStep({ steps, onStepsChange, mode = 'create' }: ManufacturingStepProps) {
     const [isStarted, setIsStarted] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
-    const [routingSteps, setRoutingSteps] = useState<ExtendedRoutingStep[]>([])
-
-    useEffect(() => {
-        if (bomId) {
-            fetchRoutingSteps();
-        } else {
-            setRoutingSteps([]);
-        }
-    }, [bomId]);
-
-    const fetchRoutingSteps = async () => {
-        if (!bomId) return;
-        try {
-            const response = await getRoutingSteps(bomId);
-            if (response.success && response.data) {
-                setRoutingSteps(response.data.map(step => ({ ...step, workCenterId: undefined })));
-            }
-        } catch (error) {
-            console.error("Failed to fetch routing steps:", error);
-        }
-    }
 
     const handleStartOrder = () => {
         setIsStarted(true);
@@ -59,12 +44,13 @@ export default function ManufacturingStep({ bomId, mode = 'create' }: { bomId?: 
     };
 
     const handleWorkCenterChange = (routingStepId: string, value: string | number) => {
-        setRoutingSteps(prev => prev.map(step =>
+        const newSteps = steps.map(step =>
             step.routingStepId === routingStepId ? { ...step, workCenterId: value } : step
-        ));
+        );
+        onStepsChange(newSteps);
     };
 
-    const totalEstimated = routingSteps.reduce((acc, curr) => acc + curr.operationTime, 0)
+    const totalEstimated = steps.reduce((acc, curr) => acc + curr.operationTime, 0)
     return (
         <Card className="w-full border-border shadow-sm bg-card">
             {mode === 'detail' && (
@@ -92,7 +78,7 @@ export default function ManufacturingStep({ bomId, mode = 'create' }: { bomId?: 
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {routingSteps.map((item, index) => (
+                        {steps.map((item, index) => (
                             <TableRow key={item.routingStepId} className="hover:bg-muted/50 transition-colors">
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell>{item.operationName}</TableCell>
@@ -116,7 +102,7 @@ export default function ManufacturingStep({ bomId, mode = 'create' }: { bomId?: 
                             </TableRow>
                         ))}
 
-                        {routingSteps.length === 0 && (
+                        {steps.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={mode === 'detail' ? 6 : 5} className="h-32 text-center text-muted-foreground">
                                     Chưa có công đoạn nào.
