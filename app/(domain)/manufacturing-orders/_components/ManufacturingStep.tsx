@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import {
     Table,
@@ -11,13 +10,15 @@ import {
 import { formatDuration } from "@/helpers/format"
 import ActionButton from "@/my-components/btn/ActionButton"
 
+import { api } from "@/lib/api"
 import WorkCenterCombobox from "@/my-components/domains/WorkCenterCombobox"
 import {
     Clock
 } from "lucide-react"
 import { useEffect, useState } from 'react'
-import { getRoutingSteps, RoutingStepResponse } from "../_services/manufacturingOrderService"
-import { api } from "@/lib/api"
+import { RoutingStepResponse, doneManufacturingOrder } from "../_services/manufacturingOrderService"
+import { ManufacturingType } from "@/resources/ManufacturingType"
+import ToastManager from "@/helpers/ToastManager"
 
 export interface ExtendedRoutingStep extends RoutingStepResponse {
     workCenterId?: string | number;
@@ -28,6 +29,7 @@ interface ManufacturingStepProps {
     onStepsChange: (steps: ExtendedRoutingStep[]) => void;
     mode?: 'create' | 'detail';
     manufacturingOrderId?: string;
+    status?: number;
 }
 
 interface WorkCenter {
@@ -36,7 +38,7 @@ interface WorkCenter {
     description: string;
 }
 
-export default function ManufacturingStep({ steps, onStepsChange, mode = 'create', manufacturingOrderId }: ManufacturingStepProps) {
+export default function ManufacturingStep({ steps, onStepsChange, mode = 'create', manufacturingOrderId, status }: ManufacturingStepProps) {
     const [isStarted, setIsStarted] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
     const [workCenters, setWorkCenters] = useState<WorkCenter[]>([]);
@@ -63,13 +65,38 @@ export default function ManufacturingStep({ steps, onStepsChange, mode = 'create
         fetchWorkCenters();
     }, [mode, manufacturingOrderId]);
 
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isStarted && !isFinished) {
+            interval = setInterval(() => {
+                setElapsedSeconds((prev) => prev + 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isStarted, isFinished]);
+
     const handleStartOrder = () => {
         setIsStarted(true);
     };
 
-    const handleFinishOrder = () => {
-        setIsFinished(true);
-        setIsStarted(false);
+    const handleFinishOrder = async () => {
+        if (!manufacturingOrderId) return;
+        try {
+            const res = await doneManufacturingOrder(manufacturingOrderId);
+            if (res.success) {
+                setIsFinished(true);
+                setIsStarted(false);
+                ToastManager.success("Đã hoàn thành lệnh sản xuất!");
+                window.location.reload();
+            } else {
+                ToastManager.error("Lỗi: " + (res.error?.message || "Không xác định"));
+            }
+        } catch (error) {
+            console.error(error);
+            ToastManager.error("Lỗi hệ thống");
+        }
     };
 
     const handleWorkCenterChange = (routingStepId: string, value: string | number) => {
@@ -82,7 +109,7 @@ export default function ManufacturingStep({ steps, onStepsChange, mode = 'create
     const totalEstimated = steps.reduce((acc, curr) => acc + curr.operationTime, 0)
     return (
         <Card className="w-full border-border shadow-sm bg-card">
-            {mode === 'detail' && (
+            {mode === 'detail' && status === ManufacturingType.Confirmed && (
                 <CardHeader className="flex justify-end items-center">
                     <div className="flex gap-2">
                         {!isStarted && !isFinished && (
@@ -103,7 +130,6 @@ export default function ManufacturingStep({ steps, onStepsChange, mode = 'create
                             <TableHead className="font-semibold">Phân xưởng</TableHead>
                             <TableHead className="font-semibold">Thời gian dự kiến</TableHead>
                             {mode === 'detail' && <TableHead className="font-semibold">Thời gian thực hiện</TableHead>}
-                            <TableHead className="font-semibold">Trạng thái</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -130,12 +156,9 @@ export default function ManufacturingStep({ steps, onStepsChange, mode = 'create
                                     </TableCell>
                                     {mode === 'detail' && <TableCell >
                                         <span>
-                                            {formatDuration(0)}
+                                            {formatDuration(elapsedSeconds / 3600)}
                                         </span>
                                     </TableCell>}
-                                    <TableCell>
-                                        <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border">Chờ bắt đầu</Badge>
-                                    </TableCell>
                                 </TableRow>
                             )
                         })}

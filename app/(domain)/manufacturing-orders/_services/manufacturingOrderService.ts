@@ -121,3 +121,8 @@ export async function confirmManufacturingOrder(manufacturingOrderId: string): P
 export async function cancelManufacturingOrder(manufacturingOrderId: string): Promise<ApiResponse<string>> {
     return api.put(`manufacturing-orders/cancel`, { manufacturingOrderId });
 }
+
+
+export async function doneManufacturingOrder(manufacturingOrderId: string): Promise<ApiResponse<string>> {
+    return api.put(`manufacturing-orders/done`, { manufacturingOrderId });
+}

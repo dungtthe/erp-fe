@@ -120,6 +120,7 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
                             onStepsChange={setSteps}
                             mode={mode}
                             manufacturingOrderId={manufacturingOrderId}
+                            status={orderDetail?.manufacturingOrderStatus}
                         />
                     </TabsContent>
                 </Tabs>
