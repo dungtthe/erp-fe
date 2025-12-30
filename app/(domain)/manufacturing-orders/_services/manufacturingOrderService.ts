@@ -64,6 +64,28 @@ export interface CreateManufacturingOrderRequest {
     endDate: Date;
     workOrders: WorkOrderRequest[];
 }
+
+export interface ManufacturingOrderDetail {
+    manufacturingOrderId: string;
+    code: string;
+    productVariantId: string;
+    routingId: string;
+    quantityToProduce: number;
+    manufacturingOrderStatus: number;
+    startDate: Date;
+    endDate: Date;
+    workOrders: WorkOrderRequest[];
+}
+
+export interface RoutingStepResponse {
+    routingId: string;
+    routingStepId: string
+    stepOrder: number
+    operationName: string
+    operationTime: number
+}
+
+
 export async function getMOs(params: { page: number; pageSize: number; searchTerm: string; productType?: number }): Promise<ApiResponse<PagedResult<ManufacturingOrder>>> {
     return api.post<PagedResult<ManufacturingOrder>>("manufacturing-orders", {
         ...params,
@@ -76,14 +98,6 @@ export async function getProductVariants(params: { page: number; pageSize: numbe
     });
 }
 
-export interface RoutingStepResponse {
-    routingId: string;
-    routingStepId: string
-    stepOrder: number
-    operationName: string
-    operationTime: number
-}
-
 export async function getBOM(productVariantId: string): Promise<ApiResponse<BOMResponse>> {
     return api.get<BOMResponse>(`bill-of-materials/get-bom/${productVariantId}`);
 }
@@ -94,4 +108,8 @@ export async function getRoutingSteps(bomID: string): Promise<ApiResponse<Routin
 
 export async function createManufacturingOrder(data: CreateManufacturingOrderRequest): Promise<ApiResponse<string>> {
     return api.post<string>("manufacturing-orders/create", data);
+}
+
+export async function getMOById(id: string): Promise<ApiResponse<ManufacturingOrderDetail>> {
+    return api.get<ManufacturingOrderDetail>(`manufacturing-orders/${id}`);
 }

@@ -14,7 +14,7 @@ import ProductListDialog from "@/my-components/domains/ProductListDialog"
 import { useRouter } from "next/navigation"
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Product } from "../../products/_services/productService"
-import { createManufacturingOrder, getBOM, getProductVariants, ProductVariant } from "../_services/manufacturingOrderService"
+import { createManufacturingOrder, getBOM, getMOById, getProductVariants, ManufacturingOrderDetail, ProductVariant } from "../_services/manufacturingOrderService"
 import { toast } from "sonner"
 import ToastManager from "@/helpers/ToastManager"
 
@@ -39,13 +39,15 @@ export default function ManufacturingInformation({
     manufacturingOrderId,
     onProductSelect,
     routingId,
-    steps
+    steps,
+    initialData
 }: {
     mode: "create" | "detail";
     manufacturingOrderId?: string;
     onProductSelect?: (productVariantId: string, bomId?: string) => void;
     routingId?: string;
     steps?: ExtendedRoutingStep[];
+    initialData?: ManufacturingOrderDetail | null;
 }) {
     const router = useRouter();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -102,24 +104,6 @@ export default function ManufacturingInformation({
         }
     };
 
-    const [orderData, setOrderData] = useState<{
-        code: string,
-        productName: string,
-        quantityToProduce: number,
-        startDate: Date | undefined,
-        endDate: Date | undefined,
-        bom: string,
-        productVariantId?: string
-    }>({
-        code: manufacturingOrderId || "",
-        productName: "Chọn sản phẩm",
-        quantityToProduce: 1,
-        startDate: undefined,
-        endDate: undefined,
-        bom: "",
-        productVariantId: undefined
-    });
-
     const handleSelectProduct = async (product: Product) => {
         const generatedCode = `MO-${new Date().getFullYear()}-${product.code}`;
         setOrderData(prev => ({
@@ -159,6 +143,75 @@ export default function ManufacturingInformation({
             }));
         }
     };
+
+    const [orderData, setOrderData] = useState<{
+        code: string,
+        productName: string,
+        quantityToProduce: number,
+        startDate: Date | undefined,
+        endDate: Date | undefined,
+        bom: string,
+        productVariantId?: string
+    }>({
+        code: manufacturingOrderId || "",
+        productName: "Chọn sản phẩm",
+        quantityToProduce: 1,
+        startDate: undefined,
+        endDate: undefined,
+        bom: "",
+        productVariantId: undefined
+    });
+
+    useEffect(() => {
+        if (initialData) {
+            const startDate = typeof initialData.startDate === 'string' ? new Date(initialData.startDate) : initialData.startDate;
+            const endDate = typeof initialData.endDate === 'string' ? new Date(initialData.endDate) : initialData.endDate;
+
+            setOrderData(prev => ({
+                ...prev,
+                code: initialData.code,
+                quantityToProduce: initialData.quantityToProduce,
+                startDate: startDate,
+                endDate: endDate,
+                productVariantId: initialData.productVariantId,
+                bom: "Đang tải...",
+                productName: "Đang tải..."
+            }));
+
+            // Fetch BOM info
+            getBOM(initialData.productVariantId).then(res => {
+                if (res.success && res.data) {
+                    const data = res.data;
+                    setOrderData(prev => ({
+                        ...prev,
+                        bom: `${data.bomCode} (Ver ${data.latestVersion})`
+                    }));
+                } else {
+                    setOrderData(prev => ({ ...prev, bom: "Không tìm thấy BOM" }));
+                }
+            }).catch(() => {
+                setOrderData(prev => ({ ...prev, bom: "Lỗi tải BOM" }));
+            });
+
+            // Fetch Product Name via Search
+            // This is a best-effort attempt assuming search by ID might work or we can find it in the first page if recent
+            getProductVariants({ page: 1, pageSize: 10, searchTerm: "" }).then(res => {
+                if (res.success && res.data) {
+                    const items = res.data.items;
+                    // Try to find matching variant
+                    const found = items.find(p => p.productVariantId === initialData.productVariantId);
+                    if (found) {
+                        setOrderData(prev => ({ ...prev, productName: found.productVariantName }));
+                    } else {
+                        // If not found in first page, maybe leave it or show ID? 
+                        // For now, let's keep "Đang tải..." or set to Code if failed? 
+                        // Or try specific search if API supports it
+                        setOrderData(prev => ({ ...prev, productName: prev.productName === "Đang tải..." ? "Sản phẩm (Chi tiết)" : prev.productName }));
+                    }
+                }
+            })
+        }
+    }, [initialData]);
 
     const handleConfirm = async () => {
         if (!orderData.productVariantId) {

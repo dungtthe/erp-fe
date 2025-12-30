@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ManufacturingInformation from "./ManufacturingInformation";
 import ManufacturingStep, { ExtendedRoutingStep } from "./ManufacturingStep";
 import ProductMaterial from "./ProductMaterial";
-import { getRoutingSteps } from "../_services/manufacturingOrderService";
+import { getBOM, getMOById, getRoutingSteps, ManufacturingOrderDetail } from "../_services/manufacturingOrderService";
 
 type ManufacturingOrderFormMode = "create" | "detail";
 
@@ -23,6 +23,31 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
     const [selectedBomId, setSelectedBomId] = useState<string>("");
     const [routingId, setRoutingId] = useState<string>("");
     const [steps, setSteps] = useState<ExtendedRoutingStep[]>([]);
+    const [orderDetail, setOrderDetail] = useState<ManufacturingOrderDetail | null>(null);
+
+    useEffect(() => {
+        const fetchDetail = async () => {
+            if (mode === 'detail' && manufacturingOrderId) {
+                try {
+                    const response = await getMOById(manufacturingOrderId);
+                    if (response.success && response.data) {
+                        const data = response.data;
+                        setOrderDetail(data);
+                        setSelectedProductVariantId(data.productVariantId);
+
+                        // Fetch BOM to simulate product selection and trigger routing fetch
+                        const bomResponse = await getBOM(data.productVariantId);
+                        if (bomResponse.success && bomResponse.data) {
+                            setSelectedBomId(bomResponse.data.bomId);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch manufacturing order details:", error);
+                }
+            }
+        };
+        fetchDetail();
+    }, [mode, manufacturingOrderId]);
 
     useEffect(() => {
         const fetchRouting = async () => {
@@ -35,7 +60,20 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
                 const response = await getRoutingSteps(selectedBomId);
                 if (response.success && response.data) {
                     setRoutingId(response.data[0].routingId);
-                    setSteps(response.data.map(step => ({ ...step, workCenterId: undefined })));
+                    const mappedSteps = response.data.map(step => {
+                        let currentWorkCenterId = undefined;
+                        if (mode === 'detail' && orderDetail?.workOrders) {
+                            const match = orderDetail.workOrders.find(wo => wo.routingStepId === step.routingStepId);
+                            if (match) {
+                                currentWorkCenterId = match.workCenterId;
+                            }
+                        }
+                        return {
+                            ...step,
+                            workCenterId: currentWorkCenterId
+                        };
+                    });
+                    setSteps(mappedSteps);
                 } else {
                     setSteps([]);
                     setRoutingId("");
@@ -47,7 +85,7 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
             }
         }
         fetchRouting();
-    }, [selectedBomId]);
+    }, [selectedBomId, orderDetail, mode]);
 
     const handleProductSelect = (productVariantId: string, bomId?: string) => {
         setSelectedProductVariantId(productVariantId);
@@ -66,6 +104,7 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
                 onProductSelect={handleProductSelect}
                 routingId={routingId}
                 steps={steps}
+                initialData={orderDetail}
             />
 
             <div className="mt-2">
@@ -82,6 +121,7 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
                             steps={steps}
                             onStepsChange={setSteps}
                             mode={mode}
+                            manufacturingOrderId={manufacturingOrderId}
                         />
                     </TabsContent>
                 </Tabs>

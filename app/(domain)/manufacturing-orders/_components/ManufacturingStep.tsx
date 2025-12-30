@@ -1,5 +1,3 @@
-"use client"
-
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import {
@@ -19,6 +17,7 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { getRoutingSteps, RoutingStepResponse } from "../_services/manufacturingOrderService"
+import { api } from "@/lib/api"
 
 export interface ExtendedRoutingStep extends RoutingStepResponse {
     workCenterId?: string | number;
@@ -28,11 +27,41 @@ interface ManufacturingStepProps {
     steps: ExtendedRoutingStep[];
     onStepsChange: (steps: ExtendedRoutingStep[]) => void;
     mode?: 'create' | 'detail';
+    manufacturingOrderId?: string;
 }
 
-export default function ManufacturingStep({ steps, onStepsChange, mode = 'create' }: ManufacturingStepProps) {
+interface WorkCenter {
+    id: string;
+    name: string;
+    description: string;
+}
+
+export default function ManufacturingStep({ steps, onStepsChange, mode = 'create', manufacturingOrderId }: ManufacturingStepProps) {
     const [isStarted, setIsStarted] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
+    const [workCenters, setWorkCenters] = useState<WorkCenter[]>([]);
+
+
+    useEffect(() => {
+        const fetchWorkCenters = async () => {
+            if (mode === 'detail' && manufacturingOrderId) {
+                try {
+                    const response = await api.get<WorkCenter[]>(`/manufacturing-orders/get-work-centers/${manufacturingOrderId}`);
+                    if (response.success && response.data) {
+                        const map: WorkCenter[] = [];
+                        response.data.forEach(wc => {
+                            map.push({ id: wc.id, name: wc.name, description: wc.description });
+                        });
+                        setWorkCenters(map);
+                        console.log(map);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch work centers", error);
+                }
+            }
+        };
+        fetchWorkCenters();
+    }, [mode, manufacturingOrderId]);
 
     const handleStartOrder = () => {
         setIsStarted(true);
@@ -78,29 +107,38 @@ export default function ManufacturingStep({ steps, onStepsChange, mode = 'create
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {steps.map((item, index) => (
-                            <TableRow key={item.routingStepId} className="hover:bg-muted/50 transition-colors">
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>{item.operationName}</TableCell>
-                                <TableCell>
-                                    <WorkCenterCombobox
-                                        value={item.workCenterId}
-                                        onChange={(val) => handleWorkCenterChange(item.routingStepId, val)}
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    {formatDuration(item.operationTime)}
-                                </TableCell>
-                                {mode === 'detail' && <TableCell >
-                                    <span>
-                                        {formatDuration(0)}
-                                    </span>
-                                </TableCell>}
-                                <TableCell>
-                                    <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border">Chờ bắt đầu</Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {steps.map((item, index) => {
+                            const workCenter = workCenters.find((w) => String(w.id) === String(item.workCenterId));
+                            const displayWorkCenter = workCenter ? `${workCenter.name}${workCenter.description ? " - " + workCenter.description : ""}` : item.workCenterId;
+
+                            return (
+                                <TableRow key={item.routingStepId} className="hover:bg-muted/50 transition-colors">
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>{item.operationName}</TableCell>
+                                    <TableCell>
+                                        {mode === 'detail' ? (
+                                            <span>{displayWorkCenter}</span>
+                                        ) : (
+                                            <WorkCenterCombobox
+                                                value={item.workCenterId}
+                                                onChange={(val) => handleWorkCenterChange(item.routingStepId, val)}
+                                            />
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {formatDuration(item.operationTime)}
+                                    </TableCell>
+                                    {mode === 'detail' && <TableCell >
+                                        <span>
+                                            {formatDuration(0)}
+                                        </span>
+                                    </TableCell>}
+                                    <TableCell>
+                                        <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border">Chờ bắt đầu</Badge>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
 
                         {steps.length === 0 && (
                             <TableRow>
