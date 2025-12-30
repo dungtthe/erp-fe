@@ -14,11 +14,12 @@ import ProductListDialog from "@/my-components/domains/ProductListDialog"
 import { useRouter } from "next/navigation"
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Product } from "../../products/_services/productService"
-import { createManufacturingOrder, getBOM, getMOById, getProductVariants, ManufacturingOrderDetail, ProductVariant } from "../_services/manufacturingOrderService"
+import { createManufacturingOrder, getBOM, getMOById, getProductVariants, ManufacturingOrderDetail, ProductVariant, confirmManufacturingOrder, cancelManufacturingOrder } from "../_services/manufacturingOrderService"
 import { toast } from "sonner"
 import ToastManager from "@/helpers/ToastManager"
 
 import { ExtendedRoutingStep } from "./ManufacturingStep";
+import { ManufacturingType, MANUFACTURING_TYPE_LABELS, MANUFACTURING_TYPE_COLORS } from "@/resources/ManufacturingType"
 
 interface InfoFieldProps {
     label: string
@@ -151,7 +152,8 @@ export default function ManufacturingInformation({
         startDate: Date | undefined,
         endDate: Date | undefined,
         bom: string,
-        productVariantId?: string
+        productVariantId?: string,
+        status?: number
     }>({
         code: manufacturingOrderId || "",
         productName: "Chọn sản phẩm",
@@ -159,7 +161,8 @@ export default function ManufacturingInformation({
         startDate: undefined,
         endDate: undefined,
         bom: "",
-        productVariantId: undefined
+        productVariantId: undefined,
+        status: undefined
     });
 
     useEffect(() => {
@@ -175,10 +178,10 @@ export default function ManufacturingInformation({
                 endDate: endDate,
                 productVariantId: initialData.productVariantId,
                 bom: "Đang tải...",
-                productName: "Đang tải..."
+                productName: "Đang tải...",
+                status: initialData.manufacturingOrderStatus
             }));
 
-            // Fetch BOM info
             getBOM(initialData.productVariantId).then(res => {
                 if (res.success && res.data) {
                     const data = res.data;
@@ -193,19 +196,13 @@ export default function ManufacturingInformation({
                 setOrderData(prev => ({ ...prev, bom: "Lỗi tải BOM" }));
             });
 
-            // Fetch Product Name via Search
-            // This is a best-effort attempt assuming search by ID might work or we can find it in the first page if recent
             getProductVariants({ page: 1, pageSize: 10, searchTerm: "" }).then(res => {
                 if (res.success && res.data) {
                     const items = res.data.items;
-                    // Try to find matching variant
                     const found = items.find(p => p.productVariantId === initialData.productVariantId);
                     if (found) {
                         setOrderData(prev => ({ ...prev, productName: found.productVariantName }));
                     } else {
-                        // If not found in first page, maybe leave it or show ID? 
-                        // For now, let's keep "Đang tải..." or set to Code if failed? 
-                        // Or try specific search if API supports it
                         setOrderData(prev => ({ ...prev, productName: prev.productName === "Đang tải..." ? "Sản phẩm (Chi tiết)" : prev.productName }));
                     }
                 }
@@ -214,57 +211,94 @@ export default function ManufacturingInformation({
     }, [initialData]);
 
     const handleConfirm = async () => {
-        if (!orderData.productVariantId) {
-            ToastManager.error("Vui lòng chọn sản phẩm!");
-            return;
-        }
+        // Validation for Create Mode
+        if (mode === 'create') {
+            if (!orderData.productVariantId) {
+                ToastManager.error("Vui lòng chọn sản phẩm!");
+                return;
+            }
 
-        if (!orderData.startDate || !orderData.endDate) {
-            ToastManager.error("Vui lòng chọn ngày bắt đầu và kết thúc!");
-            return;
-        }
-        if (orderData.startDate > orderData.endDate) {
-            ToastManager.error("Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
-            return;
-        }
-        if (!routingId) {
-            ToastManager.error("Dữ liệu định mức/quy trình chưa được tải đầy đủ!");
-            return;
-        }
-        if (steps && steps.some(s => !s.workCenterId)) {
-            ToastManager.error("Vui lòng chọn phân xưởng cho tất cả các công đoạn!");
-            return;
-        }
-        if (orderData.quantityToProduce <= 0) {
-            ToastManager.error("Số lượng phải lớn hơn 0!");
-            return;
+            if (!orderData.startDate || !orderData.endDate) {
+                ToastManager.error("Vui lòng chọn ngày bắt đầu và kết thúc!");
+                return;
+            }
+            if (orderData.startDate > orderData.endDate) {
+                ToastManager.error("Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
+                return;
+            }
+            if (!routingId) {
+                ToastManager.error("Dữ liệu định mức/quy trình chưa được tải đầy đủ!");
+                return;
+            }
+            if (steps && steps.some(s => !s.workCenterId)) {
+                ToastManager.error("Vui lòng chọn phân xưởng cho tất cả các công đoạn!");
+                return;
+            }
+            if (orderData.quantityToProduce <= 0) {
+                ToastManager.error("Số lượng phải lớn hơn 0!");
+                return;
+            }
         }
 
         try {
-            const workOrders = steps?.map(step => ({
-                manufacturingOrderId: step.routingStepId,
-                workCenterId: String(step.workCenterId),
-                routingStepId: step.routingStepId
-            })) || [];
+            if (mode === 'create') {
+                const workOrders = steps?.map(step => ({
+                    manufacturingOrderId: step.routingStepId,
+                    workCenterId: String(step.workCenterId),
+                    routingStepId: step.routingStepId
+                })) || [];
 
-            const result = await createManufacturingOrder({
-                code: orderData.code,
-                routingId: routingId,
-                quantityToProduce: orderData.quantityToProduce,
-                startDate: orderData.startDate,
-                endDate: orderData.endDate,
-                workOrders: workOrders
-            });
+                const result = await createManufacturingOrder({
+                    code: orderData.code,
+                    routingId: routingId!,
+                    quantityToProduce: orderData.quantityToProduce,
+                    startDate: orderData.startDate!,
+                    endDate: orderData.endDate!,
+                    workOrders: workOrders
+                });
 
-            if (result.success) {
-                ToastManager.success("Tạo lệnh sản xuất thành công!");
-                router.push("/manufacturing-orders");
+                if (result.success) {
+                    ToastManager.success("Tạo lệnh sản xuất thành công!");
+                    router.push("/manufacturing-orders");
+                } else {
+                    ToastManager.error("Có lỗi khi tạo lệnh: " + (result.error?.message || "Lỗi không xác định"));
+                }
+            } else if (mode === 'detail' && orderData.status === ManufacturingType.Draft) {
+                if (initialData?.manufacturingOrderId) {
+                    const result = await confirmManufacturingOrder(initialData.manufacturingOrderId);
+                    if (result.success) {
+                        ToastManager.success("Xác nhận lệnh sản xuất thành công!");
+                        window.location.reload();
+                    } else {
+                        ToastManager.error("Có lỗi khi xác nhận lệnh: " + (result.error?.message || "Lỗi không xác định"));
+                    }
+                }
             } else {
-                ToastManager.error("Có lỗi khi tạo lệnh: " + (result.error?.message || "Lỗi không xác định"));
+                ToastManager.info("Không thể thực hiện hành động này ở trạng thái hiện tại.");
             }
+
         } catch (error) {
-            console.error("Error creating order:", error);
+            console.error("Error processing order:", error);
             ToastManager.error("Đã xảy ra lỗi hệ thống.");
+        }
+    };
+
+    const handleCancel = async () => {
+        if (mode === 'detail' && orderData.status === ManufacturingType.Draft && initialData?.manufacturingOrderId) {
+            try {
+                const result = await cancelManufacturingOrder(initialData.manufacturingOrderId);
+                if (result.success) {
+                    ToastManager.success("Hủy lệnh sản xuất thành công!");
+                    router.back();
+                } else {
+                    ToastManager.error("Có lỗi khi hủy lệnh: " + (result.error?.message || "Lỗi không xác định"));
+                }
+            } catch (error) {
+                console.error("Error cancelling order:", error);
+                ToastManager.error("Đã xảy ra lỗi hệ thống.");
+            }
+        } else {
+            router.back();
         }
     };
 
@@ -272,17 +306,27 @@ export default function ManufacturingInformation({
         <Card className="w-full border-border shadow-sm overflow-hidden bg-card">
             <CardHeader className="flex items-center justify-between py-1 px-6 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1 text-sm font-semibold tracking-wide">
-                        Bản nháp
-                    </Badge>
+                    {mode === 'detail' && orderData.status ? (
+                        <Badge variant="secondary" className={`${MANUFACTURING_TYPE_COLORS[orderData.status as ManufacturingType] || 'bg-secondary text-secondary-foreground'} px-3 py-1 text-sm font-semibold tracking-wide`}>
+                            {MANUFACTURING_TYPE_LABELS[orderData.status as ManufacturingType] || 'Không xác định'}
+                        </Badge>
+                    ) : (
+                        <Badge variant="secondary" className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1 text-sm font-semibold tracking-wide">
+                            Bản nháp
+                        </Badge>
+                    )}
                 </div>
                 <div className="flex items-center gap-3">
-                    <ActionButton action="save" size="sm" onClick={handleConfirm}>
-                        Xác nhận
-                    </ActionButton>
-                    <ActionButton action="cancel" size="sm" onClick={() => router.back()}>
-                        Hủy
-                    </ActionButton>
+                    {(mode === 'create' || (mode === 'detail' && orderData.status === ManufacturingType.Draft)) && (
+                        <>
+                            <ActionButton action="save" size="sm" onClick={handleConfirm}>
+                                Xác nhận
+                            </ActionButton>
+                            <ActionButton action="cancel" size="sm" onClick={handleCancel}>
+                                Hủy
+                            </ActionButton>
+                        </>
+                    )}
                 </div>
             </CardHeader>
 

@@ -113,3 +113,11 @@ export async function createManufacturingOrder(data: CreateManufacturingOrderReq
 export async function getMOById(id: string): Promise<ApiResponse<ManufacturingOrderDetail>> {
     return api.get<ManufacturingOrderDetail>(`manufacturing-orders/${id}`);
 }
+
+export async function confirmManufacturingOrder(manufacturingOrderId: string): Promise<ApiResponse<string>> {
+    return api.put(`manufacturing-orders/confirm`, { manufacturingOrderId });
+}
+
+export async function cancelManufacturingOrder(manufacturingOrderId: string): Promise<ApiResponse<string>> {
+    return api.put(`manufacturing-orders/cancel`, { manufacturingOrderId });
+}

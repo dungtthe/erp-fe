@@ -34,8 +34,6 @@ export default function ManufacturingOrderPage({ mode, manufacturingOrderId }: M
                         const data = response.data;
                         setOrderDetail(data);
                         setSelectedProductVariantId(data.productVariantId);
-
-                        // Fetch BOM to simulate product selection and trigger routing fetch
                         const bomResponse = await getBOM(data.productVariantId);
                         if (bomResponse.success && bomResponse.data) {
                             setSelectedBomId(bomResponse.data.bomId);
