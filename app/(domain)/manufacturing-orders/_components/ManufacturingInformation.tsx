@@ -165,6 +165,8 @@ export default function ManufacturingInformation({
         status: undefined
     });
 
+    const isViewMode = mode === 'detail' && orderData.status !== ManufacturingType.Draft;
+
     useEffect(() => {
         if (initialData) {
             const startDate = typeof initialData.startDate === 'string' ? new Date(initialData.startDate) : initialData.startDate;
@@ -348,17 +350,23 @@ export default function ManufacturingInformation({
                         <InfoField
                             label="Sản phẩm"
                             value={
-                                <ProductListDialog
-                                    open={isDialogOpen}
-                                    onOpenChange={setIsDialogOpen}
-                                    trigger={<span className="text-primary font-semibold hover:underline cursor-pointer flex items-center gap-2">
+                                isViewMode ? (
+                                    <span className="text-muted-foreground font-semibold flex items-center gap-2">
                                         {orderData.productName}
-                                    </span>}
-                                    products={products}
-                                    pagination={pagination}
-                                    onPageChange={handlePageChange}
-                                    onSelect={handleSelectProduct}
-                                />
+                                    </span>
+                                ) : (
+                                    <ProductListDialog
+                                        open={isDialogOpen}
+                                        onOpenChange={setIsDialogOpen}
+                                        trigger={<span className="text-primary font-semibold hover:underline cursor-pointer flex items-center gap-2">
+                                            {orderData.productName}
+                                        </span>}
+                                        products={products}
+                                        pagination={pagination}
+                                        onPageChange={handlePageChange}
+                                        onSelect={handleSelectProduct}
+                                    />
+                                )
                             }
                         />
                         <InfoField
@@ -371,6 +379,7 @@ export default function ManufacturingInformation({
                                         value={orderData.quantityToProduce}
                                         onChange={(e) => setOrderData(prev => ({ ...prev, quantityToProduce: parseInt(e.target.value) || 0 }))}
                                         className="h-8 md:w-[160px]"
+                                        disabled={isViewMode}
                                     />
                                     <span className="text-sm text-muted-foreground">Cái</span>
                                 </div>
@@ -383,19 +392,23 @@ export default function ManufacturingInformation({
                             <InfoField
                                 label="Ngày bắt đầu"
                                 value={
-                                    <DatePicker
-                                        value={orderData.startDate}
-                                        onChange={(date) => setOrderData(prev => ({ ...prev, startDate: date }))}
-                                    />
+                                    <div className={isViewMode ? "pointer-events-none opacity-50" : ""}>
+                                        <DatePicker
+                                            value={orderData.startDate}
+                                            onChange={(date) => setOrderData(prev => ({ ...prev, startDate: date }))}
+                                        />
+                                    </div>
                                 }
                             />
                             <InfoField
                                 label="Ngày kết thúc"
                                 value={
-                                    <DatePicker
-                                        value={orderData.endDate}
-                                        onChange={(date) => setOrderData(prev => ({ ...prev, endDate: date }))}
-                                    />
+                                    <div className={isViewMode ? "pointer-events-none opacity-50" : ""}>
+                                        <DatePicker
+                                            value={orderData.endDate}
+                                            onChange={(date) => setOrderData(prev => ({ ...prev, endDate: date }))}
+                                        />
+                                    </div>
                                 }
                             />
                         </div>

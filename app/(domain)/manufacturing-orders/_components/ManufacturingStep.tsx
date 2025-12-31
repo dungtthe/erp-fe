@@ -142,7 +142,7 @@ export default function ManufacturingStep({ steps, onStepsChange, mode = 'create
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.operationName}</TableCell>
                                     <TableCell>
-                                        {mode === 'detail' ? (
+                                        {mode === 'detail' && status !== ManufacturingType.Draft ? (
                                             <span>{displayWorkCenter}</span>
                                         ) : (
                                             <WorkCenterCombobox
