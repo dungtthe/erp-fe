@@ -1,13 +1,13 @@
 "use client";
 
-import { Home, Package, ShoppingCart, Users, GalleryVerticalEnd, Factory } from "lucide-react";
+import { ClipboardList, Factory, GalleryVerticalEnd, Home, Package, ShoppingCart, Users } from "lucide-react";
 
 import * as React from "react";
 
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { NavSidebar } from "@/my-components/layout/sidebar/nav_sidebar";
 import { NavUser } from "@/my-components/layout/sidebar/nav_user";
 import { TeamSwitcher } from "@/my-components/layout/sidebar/team_switcher";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 
 const data = {
   user: {
@@ -34,6 +34,7 @@ const data = {
         { name: "Sản phẩm", url: "/products", icon: Package },
         { name: "Khách hàng", url: "/customers", icon: Users },
         { name: "Lệnh sản xuất", url: "/manufacturing-orders", icon: Factory },
+        { name: "Đơn đặt hàng", url: "/purchase-orders", icon: ClipboardList },
       ],
     },
   ],
