@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -30,9 +31,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-                  <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
+                  <Link href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
                     Quên mật khẩu?
-                  </a>
+                  </Link>
                 </div>
                 <Input id="password" type="password" required />
               </Field>
