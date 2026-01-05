@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, Factory, GalleryVerticalEnd, Home, Package, ShoppingCart, Users } from "lucide-react";
+import { ClipboardList, Factory, GalleryVerticalEnd, Home, Package, Receipt, ShoppingCart, Users } from "lucide-react";
 
 import * as React from "react";
 
@@ -35,6 +35,7 @@ const data = {
         { name: "Khách hàng", url: "/customers", icon: Users },
         { name: "Lệnh sản xuất", url: "/manufacturing-orders", icon: Factory },
         { name: "Đơn đặt hàng", url: "/purchase-orders", icon: ClipboardList },
+        { name: "Hóa đơn mua hàng", url: "/purchase-invoices", icon: Receipt },
       ],
     },
   ],
