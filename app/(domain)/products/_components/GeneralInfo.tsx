@@ -24,7 +24,6 @@ interface GeneralInfoProps {
 }
 
 export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
-  // Form states
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
@@ -42,7 +41,6 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingCategoryIds, setPendingCategoryIds] = useState<string[]>([]);
 
-  // mode = detail
   useEffect(() => {
     if (mode === "detail" && productId) {
       loadProductData(productId);
@@ -124,8 +122,6 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-
-      // Validation
       if (!name.trim()) {
         ToastManager.warning("Vui lòng nhập tên sản phẩm");
         return;
@@ -151,7 +147,6 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
         return;
       }
 
-      // Handle images
       let uploadedFileNames: string[] = [];
       const newImages = productImages.filter((img) => img.file !== null);
       const existingImages = productImages.filter((img) => img.file === null);
@@ -198,7 +193,6 @@ export default function GeneralInfo({ mode, productId }: GeneralInfoProps) {
           window.location.href = "/products";
         }, 1000);
       } else {
-        // Update mode
         if (!productId) {
           ToastManager.error("Lỗi", "Không tìm thấy ID sản phẩm");
           return;

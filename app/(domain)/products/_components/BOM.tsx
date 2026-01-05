@@ -16,10 +16,9 @@ type BOMItem = {
     materialName: string;
     qty: number;
     uom: string;
-    applyTo: string[]; // List of variant IDs. If empty or contains 'all', means all? Let's be explicit.
+    applyTo: string[];
 };
 
-// Mock variants (In real app, pass this as prop from parent)
 const MOCK_VARIANTS: Variant[] = [
     { id: "SKU-1", name: "Biến thể 1 (Đỏ/S)" },
     { id: "SKU-2", name: "Biến thể 2 (Vàng/M)" },
@@ -31,7 +30,6 @@ const MOCK_VARIANTS: Variant[] = [
 export default function BOM() {
     const [bomItems, setBomItems] = useState<BOMItem[]>([
         { id: "1", materialId: "m1", materialName: "Mặt bàn gỗ MDF", qty: 1, uom: "Cái", applyTo: ["all"] },
-        // 'all' is a special key for "All Variants"
     ]);
 
     const handleAddRow = () => {
@@ -56,7 +54,6 @@ export default function BOM() {
         setBomItems(bomItems.map((item) => (item.id === id ? { ...item, ...updates } : item)));
     };
 
-    // Calculate which variants are already used for a specific material across OTHER rows
     const getDisabledVariants = (itemId: string, materialId: string | number) => {
         if (!materialId) return [];
         const used = new Set<string>();
@@ -74,16 +71,11 @@ export default function BOM() {
 
     const handleMaterialSelect = (itemId: string, material: Material | null) => {
         if (material) {
-            // Check for conflicts with current filtered variants
             const disabledForNewMat = getDisabledVariants(itemId, material.id);
 
             setBomItems((prev) => prev.map(item => {
                 if (item.id === itemId) {
                     let newApplyTo = item.applyTo;
-                    // If previously "all", we need to see if "all" is still allowed.
-                    // If any mock variant is in disabledForNewMat, "all" is effectively invalid for THOSE variants.
-                    // We should convert "all" to specific list minus disabled ones.
-
                     if (newApplyTo.includes("all")) {
                         const allIds = MOCK_VARIANTS.map(v => v.id);
                         newApplyTo = allIds.filter(id => !disabledForNewMat.includes(id));
@@ -107,7 +99,7 @@ export default function BOM() {
                 materialId: "",
                 materialName: "",
                 uom: "",
-                applyTo: [], // Clear applyTo if no material
+                applyTo: [],
             });
         }
     };
@@ -140,7 +132,6 @@ export default function BOM() {
                                             <MaterialCombobox
                                                 value={item.materialId}
                                                 onChange={(val) => {
-                                                    // Handled in onSelectMaterial
                                                     if (!val) updateItem(item.id, { materialId: "", materialName: "", uom: "" });
                                                 }}
                                                 onSelectMaterial={(mat) => handleMaterialSelect(item.id, mat)}

@@ -10,7 +10,6 @@ interface ProductTypeComboboxProps {
 }
 
 export default function ProductTypeCombobox({ value, onChange, disabled = false, className }: ProductTypeComboboxProps) {
-  //mockdata
   const productTypes: ComboboxItem[] = [
     { id: 1, value: "Thành phẩm" },
     { id: 2, value: "Bán thành phẩm" },

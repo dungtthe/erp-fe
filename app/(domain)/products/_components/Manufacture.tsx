@@ -16,7 +16,6 @@ import VariantMultiSelect from "@/my-components/domains/VariantMultiSelect";
 import { MoreHorizontal, Pencil, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
-// Mock variants for the dropdown (Excluding "all" because component handles it)
 const VARIANTS = [
     { id: "v1", name: "Tiêu chuẩn (Mặc định)" },
     { id: "v2", name: "Hoàn thiện cao cấp" },
@@ -38,7 +37,6 @@ export default function Manufacture() {
     ]);
 
     const [editingId, setEditingId] = useState<string | null>(null);
-    // Temporary state for the row being edited
     const [tempRowData, setTempRowData] = useState<Operation | null>(null);
 
     const handleAddOperation = () => {

@@ -28,7 +28,6 @@ export type Variant = {
 export default function VariantTab() {
     const product = { name: "Sản phẩm A" };
 
-    //Mock variants
     const [variants, setVariants] = useState<Variant[]>([
         {
             sku: "SKU-1",

@@ -11,7 +11,6 @@ import { getProducts, Product } from "./_services/productService";
 
 export default function ProductsPage() {
 
-  // State
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,7 +22,6 @@ export default function ProductsPage() {
     totalPages: 1,
   });
 
-  // Debounce search term to avoid too many API calls
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useEffect(() => {
@@ -33,7 +31,6 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch Data
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -64,7 +61,6 @@ export default function ProductsPage() {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Handlers
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       setPagination((prev) => ({ ...prev, page: newPage }));
@@ -73,7 +69,7 @@ export default function ProductsPage() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on search
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleTypeChange = (value: string) => {

@@ -19,7 +19,7 @@ interface MaterialComboboxProps {
 interface ProductApiResponse {
     id: string;
     name: string;
-    uom: string; // Assuming the API returns this
+    uom: string;
 }
 
 export default function MaterialCombobox({
@@ -36,8 +36,6 @@ export default function MaterialCombobox({
     React.useEffect(() => {
         const fetchMaterials = async () => {
             setLoading(true);
-            // Assuming /products endpoint returns a list of products/materials
-            // If this endpoint doesn't exist, we might need to use a different one or mock it
             try {
                 const response = await api.get<ProductApiResponse[]>("/products");
                 if (response.success) {
@@ -45,11 +43,10 @@ export default function MaterialCombobox({
                     const mappedMaterials: Material[] = data.map((prod) => ({
                         id: prod.id,
                         value: prod.name,
-                        uom: prod.uom || "Cái", // Default if missing
+                        uom: prod.uom || "Cái",
                     }));
                     setMaterials(mappedMaterials);
                 } else {
-                    // Fallback for demo if API fails or doesn't exist yet
                     console.warn("Failed to fetch materials, using mock data");
                     setMaterials([
                         { id: "m1", value: "Gỗ MDF", uom: "m2" },
@@ -60,7 +57,6 @@ export default function MaterialCombobox({
                 }
             } catch (e) {
                 console.error(e);
-                // Fallback
                 setMaterials([
                     { id: "m1", value: "Gỗ MDF", uom: "m2" },
                     { id: "m2", value: "Sắt hộp 30x30", uom: "mét" },

@@ -28,7 +28,6 @@ export default function VariantMultiSelect({
 
     const isAll = selected.includes("all");
 
-    // Helper to get variant name
     const getVariantName = (id: string) => {
         return variants.find(v => v.id === id)?.name || id;
     };
@@ -39,7 +38,6 @@ export default function VariantMultiSelect({
         let newSelected = [...selected];
 
         if (id === "all") {
-            // Toggle "All"
             if (isAll) {
                 newSelected = [];
             } else {
@@ -49,9 +47,7 @@ export default function VariantMultiSelect({
                 }
             }
         } else {
-            // Toggle specific
             if (isAll) {
-                // If currently "all", map to specific IDs first
                 const allIds = variants.map(v => v.id);
                 newSelected = allIds;
 
@@ -69,12 +65,10 @@ export default function VariantMultiSelect({
             }
         }
 
-        // If we deselected something and "all" was present (implicit or explicit), remove "all" marker
         if (id !== "all" && newSelected.includes("all")) {
             newSelected = newSelected.filter(x => x !== "all");
         }
 
-        // Check if we effectively selected all
         const allSpecificIds = variants.map(v => v.id);
         const selectedSpecifics = newSelected.filter(x => x !== "all");
 

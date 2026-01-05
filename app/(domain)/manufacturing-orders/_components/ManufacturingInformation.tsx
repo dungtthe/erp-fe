@@ -213,7 +213,6 @@ export default function ManufacturingInformation({
     }, [initialData]);
 
     const handleConfirm = async () => {
-        // Validation for Create Mode
         if (mode === 'create') {
             if (!orderData.productVariantId) {
                 ToastManager.error("Vui lòng chọn sản phẩm!");
