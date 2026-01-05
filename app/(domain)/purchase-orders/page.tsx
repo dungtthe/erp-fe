@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import DetailIcon from "@/my-components/icons/DetailIcon";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import MyPagination from "@/my-components/paginations/MyPagination";
+import ActionButton from "@/my-components/btn/ActionButton";
 
 
 type POStatus =
@@ -192,10 +193,9 @@ export default function PurchaseOrderListPage() {
 
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button size="sm" className="h-9 gap-1 shadow-sm">
-                        <Plus className="h-4 w-4" />
+                    <ActionButton action="create" href="/purchase-orders/create">
                         <span className="hidden sm:inline">Tạo đơn đặt hàng</span>
-                    </Button>
+                    </ActionButton>
                 </div>
             </div>
 
@@ -282,13 +282,13 @@ export default function PurchaseOrderListPage() {
                         <Table>
                             <TableHeader className="bg-muted/50">
                                 <TableRow>
-                                    <TableHead>STT</TableHead>
-                                    <TableHead className="w-[140px]">Mã đơn hàng</TableHead>
-                                    <TableHead>Nhà cung cấp</TableHead>
-                                    <TableHead>Ngày giao hàng</TableHead>
-                                    <TableHead className="text-right">Tổng tiền</TableHead>
-                                    <TableHead>Trạng thái</TableHead>
-                                    <TableHead className="w-[50px]">Hành động</TableHead>
+                                    <TableHead className="font-semibold">STT</TableHead>
+                                    <TableHead className="w-[140px] font-semibold">Mã đơn hàng</TableHead>
+                                    <TableHead className="font-semibold">Nhà cung cấp</TableHead>
+                                    <TableHead className="font-semibold">Ngày giao hàng</TableHead>
+                                    <TableHead className="text-right font-semibold">Tổng tiền</TableHead>
+                                    <TableHead className="font-semibold">Trạng thái</TableHead>
+                                    <TableHead className="w-[50px] font-semibold">Hành động</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
