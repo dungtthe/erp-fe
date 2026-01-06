@@ -289,7 +289,7 @@ export default function PurchaseInvoiceListPage() {
             <div className="rounded-xl border shadow-sm bg-card overflow-hidden flex flex-col">
                 <Card className="border-0 shadow-none">
                     <CardContent className="p-0">
-                        <div className="relative w-full overflow-auto max-h-[70vh]">
+                        <div className="relative w-full overflow-auto">
                             <Table>
                                 <TableHeader className="bg-muted/50 sticky top-0 z-10 shadow-sm">
                                     <TableRow className="hover:bg-muted/50">
@@ -297,8 +297,6 @@ export default function PurchaseInvoiceListPage() {
                                         <TableHead className="font-semibold ">Số hóa đơn</TableHead>
                                         <TableHead className="font-semibold ">Nhà cung cấp</TableHead>
                                         <TableHead className="font-semibold ">Hạn thanh toán</TableHead>
-                                        <TableHead className="text-right font-semibold ">Tổng tiền</TableHead>
-                                        <TableHead className="text-right font-semibold ">Đã thanh toán</TableHead>
                                         <TableHead className="text-right font-semibold ">Còn lại</TableHead>
                                         <TableHead className="font-semibold text-center">Trạng thái</TableHead>
                                         <TableHead className="text-right font-semibold ">Hành động</TableHead>
@@ -334,12 +332,6 @@ export default function PurchaseInvoiceListPage() {
                                                 </TableCell>
                                                 <TableCell className="text-sm text-muted-foreground py-3">
                                                     {format(invoice.dueDate, "dd/MM/yyyy")}
-                                                </TableCell>
-                                                <TableCell className="text-right font-medium py-3">
-                                                    {formatCurrency(invoice.totalAmount)}
-                                                </TableCell>
-                                                <TableCell className="text-right text-muted-foreground py-3">
-                                                    {formatCurrency(invoice.paidAmount)}
                                                 </TableCell>
                                                 <TableCell className="text-right font-semibold whitespace-nowrap py-3">
                                                     {formatCurrency(invoice.balanceAmount)}
