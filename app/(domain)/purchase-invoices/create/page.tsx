@@ -50,7 +50,6 @@ import {
 } from "@/components/ui/command";
 
 
-// --- Types ---
 
 type InvoiceSource = "PO" | "MANUAL";
 type LineType = "ITEM" | "EXPENSE";
@@ -59,7 +58,7 @@ interface Supplier {
     id: string;
     name: string;
     currency: string;
-    paymentTerms: number; // days
+    paymentTerms: number;
 }
 
 interface ReferenceDoc {
@@ -75,16 +74,15 @@ interface InvoiceLine {
     itemCode: string;
     description: string;
     uom: string;
-    quantity: number; // For PO this is the Ordered Qty
-    remainingQuantity?: number; // Valid only for PO
+    quantity: number;
+    remainingQuantity?: number;
     invoicedQuantity: number;
     unitPrice: number;
-    originalPrice?: number; // For price warning
+    originalPrice?: number;
     taxRate: number;
     type: LineType;
 }
 
-// --- Mock Data ---
 
 const SUPPLIERS: Supplier[] = [
     { id: "s1", name: "TechParts Solution", currency: "VND", paymentTerms: 30 },
@@ -114,7 +112,6 @@ const MOCK_POS: ReferenceDoc[] = [
     }
 ];
 
-// --- Helper Functions ---
 
 const formatCurrency = (amount: number, currency: string = "VND") => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency }).format(amount);
@@ -123,7 +120,6 @@ const formatCurrency = (amount: number, currency: string = "VND") => {
 export default function CreatePurchaseInvoicePage() {
     const router = useRouter();
 
-    // --- State ---
 
     const [source, setSource] = React.useState<InvoiceSource | null>(null);
     const [selectedReference, setSelectedReference] = React.useState<string | null>(null);
@@ -138,7 +134,6 @@ export default function CreatePurchaseInvoicePage() {
 
     const [isSupplierOpen, setIsSupplierOpen] = React.useState(false);
 
-    // --- Effects ---
 
     React.useEffect(() => {
         if (supplierId && invoiceDate) {
@@ -162,8 +157,6 @@ export default function CreatePurchaseInvoicePage() {
             setLines([]);
         }
     }, [source, selectedReference]);
-
-    // --- Handlers ---
 
     const handleSourceSelect = (newSource: InvoiceSource) => {
         setSource(newSource);
@@ -226,7 +219,6 @@ export default function CreatePurchaseInvoicePage() {
         router.push("/purchase-invoices");
     };
 
-    // --- Calculations ---
 
     const currentSupplier = SUPPLIERS.find(s => s.id === supplierId);
     const currency = currentSupplier?.currency || "VND";
@@ -424,6 +416,7 @@ export default function CreatePurchaseInvoicePage() {
                                     <TableHead className="w">ĐVT</TableHead>
                                     {source === "PO" && <TableHead className="text-right">SL Gốc</TableHead>}
                                     {source === "PO" && <TableHead className="text-right">SL Còn</TableHead>}
+                                    <TableHead className="text-right">SL Hóa đơn</TableHead>
                                     <TableHead className="text-right">Đơn giá</TableHead>
                                     <TableHead className="text-right">Thuế %</TableHead>
                                     <TableHead className="text-right">Thành tiền</TableHead>
@@ -433,7 +426,7 @@ export default function CreatePurchaseInvoicePage() {
                             <TableBody>
                                 {lines.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                                        <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                                             {source
                                                 ? "Chưa có dữ liệu."
                                                 : "Vui lòng chọn nguồn hóa đơn."}
@@ -465,6 +458,16 @@ export default function CreatePurchaseInvoicePage() {
                                                     <TableCell className="text-right font-medium">{line.remainingQuantity}</TableCell>
                                                 </>
                                             )}
+                                            <TableCell className={cn(source === "PO" ? "w-[100px]" : "w-[120px]")}>
+                                                <Input
+                                                    type="number"
+                                                    className={cn("h-8 text-right w-full",
+                                                        (line.remainingQuantity !== undefined && line.invoicedQuantity > line.remainingQuantity) ? "border-destructive text-destructive" : ""
+                                                    )}
+                                                    value={line.invoicedQuantity}
+                                                    onChange={e => handleLineChange(line.id, "invoicedQuantity", Number(e.target.value))}
+                                                />
+                                            </TableCell>
                                             <TableCell className="w-[120px]">
                                                 <Input
                                                     type="number"

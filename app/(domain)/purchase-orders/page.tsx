@@ -201,7 +201,7 @@ export default function PurchaseOrderListPage() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 bg-card p-4 rounded-xl border shadow-sm items-end">
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">Mã đơn hàng</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Mã đơn hàng</label>
                     <div className="relative">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -214,7 +214,7 @@ export default function PurchaseOrderListPage() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">Nhà cung cấp</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Nhà cung cấp</label>
                     <Select value={supplierFilter} onValueChange={setSupplierFilter}>
                         <SelectTrigger className="bg-background">
                             <SelectValue placeholder="Nhà cung cấp" />
@@ -231,7 +231,7 @@ export default function PurchaseOrderListPage() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-muted-foreground">Trạng thái</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Trạng thái</label>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-between bg-background text-left font-normal">

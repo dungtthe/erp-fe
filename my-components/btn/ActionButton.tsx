@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, Play, Plus, Save, Trash, X } from "lucide-react";
+import { Check, Pencil, Play, Plus, Save, Trash, X } from "lucide-react";
 import Link from "next/link";
 
 const ACTION_CONFIG = {
@@ -42,9 +42,15 @@ const ACTION_CONFIG = {
     variant: "outline",
     className: "border-muted-foreground text-foreground",
   },
+  edit: {
+    label: "Chỉnh sửa",
+    icon: Pencil,
+    variant: "outline",
+    className: "border-muted-foreground text-foreground",
+  },
 } as const;
 
-type ActionType = "create" | "save" | "cancel" | "delete" | "start" | "finish";
+type ActionType = "create" | "save" | "cancel" | "delete" | "start" | "finish" | "edit";
 
 type ActionButtonProps = {
   action: ActionType;

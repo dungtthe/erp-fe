@@ -213,7 +213,7 @@ export default function PurchaseInvoiceListPage() {
 
             <div className="grid gap-4 md:grid-cols-4 bg-card p-4 rounded-xl border shadow-sm">
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Số hóa đơn</label>
+                    <label className="text-xs font-semibold text-muted-foreground  tracking-wider">Số hóa đơn</label>
                     <div className="relative">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -226,7 +226,7 @@ export default function PurchaseInvoiceListPage() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nhà cung cấp</label>
+                    <label className="text-xs font-semibold text-muted-foreground  tracking-wider">Nhà cung cấp</label>
                     <Select value={supplierFilter} onValueChange={(val) => setSupplierFilter(val === "all_clear" ? "" : val)}>
                         <SelectTrigger className="h-10 bg-background">
                             <SelectValue placeholder="Chọn nhà cung cấp" />
@@ -241,7 +241,7 @@ export default function PurchaseInvoiceListPage() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trạng thái</label>
+                    <label className="text-xs font-semibold text-muted-foreground tracking-wider">Trạng thái</label>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-between h-10 bg-background font-normal">

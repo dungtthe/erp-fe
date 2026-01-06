@@ -15,7 +15,7 @@ export default function Header() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Đặt tên màn hình ở đây</BreadcrumbLink>
+                  {/* <BreadcrumbLink href="#">Đặt tên màn hình ở đây</BreadcrumbLink> */}
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
