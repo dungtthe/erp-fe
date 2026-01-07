@@ -28,14 +28,29 @@ const data = {
       items: [{ name: "Tổng quan", url: "/dashboard", icon: Home }],
     },
     {
-      label: "Quản lý đơn hàng",
+      label: "Quản lý mua hàng",
       items: [
-        { name: "Đơn hàng", url: "/orders", icon: ShoppingCart },
-        { name: "Sản phẩm", url: "/products", icon: Package },
-        { name: "Khách hàng", url: "/customers", icon: Users },
-        { name: "Lệnh sản xuất", url: "/manufacturing-orders", icon: Factory },
         { name: "Đơn đặt hàng", url: "/purchase-orders", icon: ClipboardList },
         { name: "Hóa đơn mua hàng", url: "/purchase-invoices", icon: Receipt },
+      ],
+    },
+    {
+      label: "Quản lý sản phẩm",
+      items: [
+        { name: "Sản phẩm", url: "/products", icon: Package },
+      ],
+    },
+    {
+      label: "Quản lý bán hàng",
+      items: [
+        { name: "Đơn hàng", url: "/orders", icon: ShoppingCart },
+        { name: "Hóa đơn bán hàng", url: "/sales-invoices", icon: Receipt },
+      ],
+    },
+    {
+      label: "Quản lý sản xuất",
+      items: [
+        { name: "Lệnh sản xuất", url: "/manufacturing-orders", icon: Factory },
       ],
     },
   ],

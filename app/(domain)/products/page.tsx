@@ -17,7 +17,7 @@ export default function ProductsPage() {
   const [productType, setProductType] = useState<string>("all");
   const [pagination, setPagination] = useState({
     page: 1,
-    pageSize: 5,
+    pageSize: 3,
     totalCount: 0,
     totalPages: 1,
   });
@@ -109,7 +109,7 @@ export default function ProductsPage() {
           </div>
           <div className="flex items-center gap-3">
             <ActionButton action="create" href="/products/create">
-              Add Product
+              Thêm sản phẩm
             </ActionButton>
           </div>
         </div>
